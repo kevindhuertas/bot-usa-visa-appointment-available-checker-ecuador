@@ -1,5 +1,6 @@
 from selenium import webdriver
 import platform
+import logging
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -110,13 +111,13 @@ def login(driver):
 def check_dates(driver):
     global alert_sent,location
     try:
-        # Variables
+        logging.info("Check_date() running")
         location_select_id = "appointments_consulate_appointment_facility_id"
         date_input_id = "appointments_consulate_appointment_date"
         first_group_class = "ui-datepicker-group-first"
         next_button_class = "ui-datepicker-next"
         # stop_month = ["June", "Junio"]
-        stop_month = ["September", "Septiembre"]
+        stop_month = ["May", "mayo"]
 
         # First location
         location_select = WebDriverWait(driver, pageLoadTime).until(
@@ -197,9 +198,9 @@ def check_calendar_group(driver, group_class):
 
 def alert_available_date(month, day):
     global alert_sent
-    print(f"Fecha disponible encontrada: {day} de {month}")
     if(alert_sent == False):
         alert_system = EmailAlert()
         alert_system.send_email_alert(month, day,location)
+        logging.info(f"EMAIL ALERT : Fecha disponible: {day} de {month} en {location}")
         alert_sent = True
     
