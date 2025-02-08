@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from email_alert import EmailAlert
@@ -12,13 +13,22 @@ from page_credentials import USER_EMAIL, USER_PASSWORD
 url = "https://ais.usvisa-info.com/es-ec/niv/schedule/52492462/appointment"
 alert_sent = False
 location = '';
+pageLoadTime = 10;
 
 def verificar_cita():
     chrome_options = Options()
-    # chrome_options.add_argument("--headless")  # Ejecuta el navegador en modo headless (sin interfaz gráfica)
-    # chrome_options.add_argument("--disable-gpu")  # Necesario para algunos entornos headless
-    # chrome_options.add_argument("--no-sandbox")  # Evita errores en contenedores
-    # chrome_options.add_argument("--disable-dev-shm-usage")  # Mejora rendimiento en modo headless
+    chrome_options.add_argument("--headless")  # Ejecuta el navegador en modo headless (sin interfaz gráfica)
+    chrome_options.add_argument("--disable-gpu")  # Necesario para algunos entornos headless
+    chrome_options.add_argument("--no-sandbox")  # Evita errores en contenedores
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Mejora rendimiento en modo headless
+    chrome_options.add_argument("--disable-extensions")  # Nueva opción para mejor rendimiento
+
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option("useAutomationExtension", False)
+    chrome_options.add_argument("--enable-javascript")
+    chrome_options.add_argument("--remote-debugging-port=9222")
 
     # Detectar sistema operativo
     if platform.system() == "Windows":
@@ -35,7 +45,7 @@ def verificar_cita():
 
     try:
         driver.get(url)
-        time.sleep(5)
+        time.sleep(pageLoadTime)
         current_url = driver.current_url
         login_url = "https://ais.usvisa-info.com/es-ec/niv/users/sign_in"
 
@@ -43,9 +53,13 @@ def verificar_cita():
             print("El navegador ha sido redireccionado a la página de inicio de sesión.")
             login(driver)
 
-            time.sleep(5)
-            current_url = driver.current_url
 
+            location_select_id = "appointments_consulate_appointment_facility_id"
+            WebDriverWait(driver, pageLoadTime).until(
+                EC.presence_of_element_located((By.ID, location_select_id))
+            )
+
+            current_url = driver.current_url
             if current_url == url:
                 print("Redirección exitosa a la página de citas.")
                 check_dates(driver)
@@ -55,7 +69,7 @@ def verificar_cita():
             print("El navegador está en la página de citas o en otra página diferente.")
             check_dates(driver)
     except Exception as e:
-        errorController(e)
+        errorController(f"Error crítico: {str(e)}")
     finally:
         driver.quit()
 
@@ -69,7 +83,7 @@ def errorController(e):
 def login(driver):
     try:
         try:
-            ok_button = WebDriverWait(driver, 10).until(
+            ok_button = WebDriverWait(driver, pageLoadTime).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "ui-button"))
             )
             ok_button.click()
@@ -77,7 +91,7 @@ def login(driver):
         except:
             print("No se encontró el botón OK.")
 
-        email_input = WebDriverWait(driver, 10).until(
+        email_input = WebDriverWait(driver, pageLoadTime).until(
             EC.presence_of_element_located((By.ID, "user_email"))
         )
         email_input.send_keys(USER_EMAIL)
@@ -105,7 +119,7 @@ def check_dates(driver):
         stop_month = ["September", "Septiembre"]
 
         # First location
-        location_select = WebDriverWait(driver, 10).until(
+        location_select = WebDriverWait(driver, pageLoadTime).until(
             EC.presence_of_element_located((By.ID, location_select_id))
         )
         location = "Quito";
