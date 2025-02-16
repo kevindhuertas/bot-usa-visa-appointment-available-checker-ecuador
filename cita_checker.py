@@ -1,10 +1,11 @@
+import sys
 from selenium import webdriver
 import platform
 import logging
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 import time
@@ -15,6 +16,9 @@ url = "https://ais.usvisa-info.com/es-ec/niv/schedule/52492462/appointment"
 alert_sent = False
 location = '';
 pageLoadTime = 10;
+allowed_location_to_save_appointment = ["Quito"]
+allowed_months_to_save_appointment = ["February", "March", "Febrero", "Marzo"]
+stop_month = ["May", "Mayo"]
 
 def verificar_cita():
     chrome_options = Options()
@@ -116,32 +120,43 @@ def check_dates(driver):
         date_input_id = "appointments_consulate_appointment_date"
         first_group_class = "ui-datepicker-group-first"
         next_button_class = "ui-datepicker-next"
-        # stop_month = ["June", "Junio"]
-        stop_month = ["May", "mayo"]
 
         # First location
+        location = "Quito";
         location_select = WebDriverWait(driver, pageLoadTime).until(
             EC.presence_of_element_located((By.ID, location_select_id))
         )
-        location = "Quito";
-        location_select.send_keys("Quito")
+        location_select.click()
+        time.sleep(1) 
+        options = location_select.find_elements(By.TAG_NAME, "option")
+        for option in options:
+            if option.text == location:
+                option.click()
+                print(f"Cambio de locacion a {option.text}")
+                break
         time.sleep(3)  
         verify_dates_until_june(driver, date_input_id, first_group_class, next_button_class, stop_month)
 
         # reset date_pciker and alert
         alert_sent = False
-        location = "Guayaquil";
-        location_select = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, location_select_id))
-        )
+ 
         driver.find_element(By.TAG_NAME, "body").click()
         driver.find_element(By.ID, "header").click()
-        
-        # second location
-        print("Cambiando a la ubicación Guayaquil...")
-        location_select.send_keys(location)
 
-        time.sleep(5) 
+        #SEGUNDA LOCACION
+        location = "Guayaquil";
+        location_select = WebDriverWait(driver, pageLoadTime).until(
+            EC.presence_of_element_located((By.ID, location_select_id))
+        )
+        location_select.click()
+        time.sleep(1) 
+        options = location_select.find_elements(By.TAG_NAME, "option")
+        for option in options:
+            if option.text == location:
+                option.click()
+                print(f"Cambio de locacion a {option.text}")
+                break
+        time.sleep(3)  
         verify_dates_until_june(driver, date_input_id, first_group_class, next_button_class, stop_month)
 
     except Exception as e:
@@ -161,7 +176,7 @@ def verify_dates_until_june(driver, date_input_id, first_group_class, next_butto
             first_group = driver.find_element(By.CLASS_NAME, first_group_class)
             current_month = first_group.find_element(By.CLASS_NAME, "ui-datepicker-month").text
             if current_month in stop_month:
-                print(f"Mes de {current_month} alcanzado, terminando la verificación.")
+                # print(f"Mes de {current_month} alcanzado, terminando la verificación.")
                 break
             
             # Pasar al siguiente mes (doble clic en el botón "next" para asegurarnos de avanzar mes a mes)
@@ -179,7 +194,7 @@ def check_calendar_group(driver, group_class):
         # Obtener el grupo del calendario
         calendar_group = driver.find_element(By.CLASS_NAME, group_class)
         month = calendar_group.find_element(By.CLASS_NAME, "ui-datepicker-month").text
-        print(f"Verificando el mes: {month}")
+        # print(f"Verificando el mes: {month}")
 
         # Obtener los días del mes
         tbody = calendar_group.find_element(By.TAG_NAME, "tbody")
@@ -193,14 +208,74 @@ def check_calendar_group(driver, group_class):
                     if a_tag:
                         day_number = a_tag[0].text
                         alert_available_date(month, day_number)
+                        
+                        #save_appointment
+                        if month in allowed_months_to_save_appointment:
+                            if location in allowed_location_to_save_appointment:
+                                a_tag[0].click()
+                                autoSelectDate(driver,month,day_number)
+
     except Exception as e:
         errorController(f"Error durante la verificación del grupo de calendario: {e}")
+
 
 def alert_available_date(month, day):
     global alert_sent
     if(alert_sent == False):
         alert_system = EmailAlert()
-        alert_system.send_email_alert(month, day,location)
+        alert_system.send_email_alert("CITA DISPONIBLE:",month, day,location)
         logging.info(f"EMAIL ALERT : Fecha disponible: {day} de {month} en {location}")
         alert_sent = True
-    
+
+
+def autoSelectDate(driver,month,day):
+    try:
+        time.sleep(4)
+        # Dar click en el select de horarios de citas
+        select_element = driver.find_element(By.ID, "appointments_consulate_appointment_time")
+        select_element.click()
+        time.sleep(3)
+        # Obtener todas las opciones disponibles dentro del select
+        options = select_element.find_elements(By.TAG_NAME, "option")
+        time.sleep(1)
+
+        # Verificar que exista al menos una segunda opción
+        if len(options) < 2:
+            print("No hay suficientes opciones disponibles en el select.")
+            time.sleep(3)
+            select_element = driver.find_element(By.ID, "appointments_consulate_appointment_time")
+            select_element.click()
+            time.sleep(15)
+            # Obtener todas las opciones disponibles dentro del select
+            options = select_element.find_elements(By.TAG_NAME, "option")
+            time.sleep(1)
+            if len(options) < 2:
+                return
+        # Seleccionar la segunda opción
+       
+        options[1].click()
+
+        # Dar click en el botón de envío (input con id appointments_submit)
+        submit_button = driver.find_element(By.ID, "appointments_submit")
+        submit_button.click()
+
+        time.sleep(1)
+
+
+
+        # Dar click en el enlace (a) con la clase "button alert"
+        # Se utiliza un selector CSS para combinar ambas clases
+        #CUIDADO QUE ESCOGE CITA
+        alert_button = driver.find_element(By.CSS_SELECTOR, "a.button.alert")
+        alert_button.click()
+        
+        time.sleep(10)
+        logging.info(f"FECHA SELECCIONADA Y ENVIADA {month} el {day} en {location}")
+        alert_system = EmailAlert()
+        alert_system.send_email_alert("CITA AUTO PROGRAMADA! ",month, day,location)
+        time.sleep(45)
+        # Forzar el cierre del programa
+        sys.exit()
+
+    except Exception as e:
+        errorController(f"Error en autoSelectDate: {e}")

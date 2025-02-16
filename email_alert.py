@@ -11,19 +11,18 @@ class EmailAlert:
         self.sender_password = PASSWORD
         self.recipient_email = RECIPIENT_EMAIL
 
-    def send_email_alert(self, month: str, day: str, location: str) -> None:
+    def send_email_alert(self, title: str, month: str, day: str, location: str) -> None:
         """
         Envía alerta de cita disponible por email
         """
         msg = EmailMessage()
-        msg['Subject'] = f"CITA DISPONIBLE el {day} de {month} en {location}"
+        msg['Subject'] = f"{title} el {day} de {month} en {location}"
         msg['From'] = self.sender_email
         msg['To'] = self.recipient_email
         msg.set_content(
-            f"¡Se ha detectado una cita disponible!\n\n"
+            f"¡{title}!\n\n"
             f"Fecha: {day} de {month}\n"
             f"Ubicación: {location}\n\n"
-            "Accede rápidamente a reservarla antes de que se agote."
         )
 
         # Enviar email con conexión segura

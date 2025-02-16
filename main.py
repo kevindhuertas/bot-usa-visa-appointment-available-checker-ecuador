@@ -24,4 +24,4 @@ if __name__ == "__main__":
     while True:
         main()
         # Esperar 30 minutos (1800 segundos)
-        time.sleep(600)
+        time.sleep(400)
