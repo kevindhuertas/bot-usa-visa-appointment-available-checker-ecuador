@@ -37,6 +37,14 @@ nano credentials.py  # Add your Gmail credentials
 | **Stop program** | `pkill -f "python3 main.py"` |
 | **Check if running** | `ps aux | grep "python3 main.py"` |
 
+### For Linux
+| **Acción**             | **Comando** |
+|------------------------|------------|
+| **Ejecutar en segundo plano** | `nohup python3 main.py > app.log 2>&1 &` |
+| **Ver logs en tiempo real** | `tail -f app.log` |
+| **Detener el proceso** | `pkill -f "python3 main.py"` |
+| **Ver si está corriendo** | `ps aux | grep "python3 main.py"` |
+
 ### For Windows (PowerShell)
 | Action | Command |
 |--------|---------|

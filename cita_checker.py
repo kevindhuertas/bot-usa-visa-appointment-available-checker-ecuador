@@ -40,8 +40,11 @@ def verificar_cita():
         driver_path = "./chromedriver.exe"
     elif platform.system() == "Darwin":  # macOS
         driver_path = "./chromedriver"
+    elif platform.system() == "Linux":  # Agregar compatibilidad con Linux
+        driver_path = "./chromedriver"
     else:
-        raise Exception("Sistema operativo no soportado. Solo Windows y macOS son compatibles.")
+        raise Exception("Sistema operativo no soportado. Solo Windows, macOS y Linux son compatibles.")
+
 
     # Configurar el servicio de ChromeDriver
     service = Service(driver_path)
