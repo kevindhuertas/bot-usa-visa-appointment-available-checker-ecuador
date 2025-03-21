@@ -3,3 +3,4 @@ page_credentials.py
 # Otros archivos o directorios que quieras ignorar
 *.log
 __pycache__/
+.DS_store
