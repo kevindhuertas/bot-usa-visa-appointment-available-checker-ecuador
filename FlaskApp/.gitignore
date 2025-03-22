@@ -2,5 +2,5 @@ gmail_credentials.py
 page_credentials.py
 # Otros archivos o directorios que quieras ignorar
 *.log
-__pycache__/
-.DS_store
+__pycache__
+.DS_Store
