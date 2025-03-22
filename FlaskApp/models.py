@@ -10,6 +10,7 @@ def load_processes():
         return json.load(f)
 
 def save_processes(processes):
+    print(f"SAVE PROCESS: {processes}")
     with open(JSON_FILE, 'w') as f:
         json.dump(processes, f, indent=4)
 
@@ -33,8 +34,9 @@ def update_process(user_email, updated_proc):
     updated = False
     for idx, proc in enumerate(processes):
         if proc.get('USER_EMAIL') == user_email:
+            print(f"Proceso {proc}, UPDATE with: {updated_proc}")
             # Permitir edición solo si el proceso está inactivo
-            if proc.get('status') == 'active':
+            if proc.get('status') == 'active' and updated_proc.get('status') == 'active':
                 return None
             processes[idx] = updated_proc
             updated = True

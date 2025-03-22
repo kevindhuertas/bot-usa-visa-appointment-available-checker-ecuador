@@ -1,0 +1,17 @@
+[
+    {
+        "USER_EMAIL": "kevindhuertas@gmail.com",
+        "USER_PASSWORD": "Password",
+        "allowed_location_to_save_appointment": [
+            "Quito",
+            "Guayaquil"
+        ],
+        "allowed_months_to_save_appointment": [
+            "February",
+            "March"
+        ],
+        "stop_month": "Mayo",
+        "status": "inactive",
+        "pid": ""
+    }
+]

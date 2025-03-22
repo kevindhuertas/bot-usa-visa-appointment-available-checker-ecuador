@@ -6,11 +6,11 @@ import signal
 def start_process(config):
     # Armamos la lista de argumentos, por ejemplo:
     args = [
-        "python3", "main.py",
-        "--user_email", config["USER_EMAIL"],
-        "--user_password", config["USER_PASSWORD"],
-        "--allowed_location", ",".join(config["allowed_location_to_save_appointment"]),
-        "--allowed_months", ",".join(config["allowed_months_to_save_appointment"]),
+        "python3", "../main.py",
+        "--email", config["USER_EMAIL"],
+        "--password", config["USER_PASSWORD"],
+        "--locations", ",".join(config["allowed_location_to_save_appointment"]),
+        "--months", ",".join(config["allowed_months_to_save_appointment"]),
         "--stop_month", config["stop_month"]
     ]
     # Iniciar el proceso en background
@@ -24,8 +24,10 @@ def stop_process(user_email):
         return None
     pid = proc.get('pid')
     try:
+        print(f"DETENIENDO PROCESO: de{user_email} con id {pid}")
         os.kill(pid, signal.SIGTERM)
         proc['status'] = 'inactive'
+        proc['pid'] = ''
         update_process(user_email, proc)
         return proc
     except Exception as e:
@@ -36,6 +38,6 @@ def get_process_status(pid):
     try:
         # Intenta enviar una señal 0 para comprobar si el proceso existe
         os.kill(pid, 0)
-        return "active"
+        return True
     except:
-        return "inactive"
+        return False

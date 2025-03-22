@@ -4,6 +4,7 @@ import { Container, Typography, Button, Box } from '@mui/material';
 import ProcessForm from './ProcessForm';
 import ProcessList from './ProcessList';
 import { Constants } from '@/Constants/Contants';
+import { useNotification } from '@/context/NotificationContext';
 
 export interface ProcessData {
   USER_EMAIL: string;
@@ -19,17 +20,21 @@ const App: React.FC = () => {
   const [showForm, setShowForm] = useState<boolean>(false);
   const [processes, setProcesses] = useState<ProcessData[]>([]);
   const [editProcess, setEditProcess] = useState<ProcessData | null>(null);
-
+  const { notify } = useNotification();
   // Función para refrescar la lista de procesos
   const fetchProcesses = async () => {
     try {
+      console.info("BUSCANDO PROCESOS")
       const response = await fetch(Constants.BOT_BASE_URL + 'processes');
       if (!response.ok) {
+        notify('Error al obtener procesos', 'error');
         throw new Error('Error al obtener los procesos');
       }
       const data: ProcessData[] = await response.json();
       setProcesses(data);
+      notify('Procesos Obtenidos correctamente', 'success');
     } catch (error) {
+      
       console.error('Error fetching processes:', error);
     }
   };
@@ -40,6 +45,36 @@ const App: React.FC = () => {
     const interval = setInterval(fetchProcesses, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+
+      // Diferencia la notificación según el código de respuesta
+      if (!response.ok) {
+        try {
+          const cloned = response.clone();
+          const data = await cloned.json();
+          // Se espera que el servidor envíe { error: "..." } o { message: "..." }
+          const serverMsg = data.error || data.message || 'Ocurrió un error';
+          notify(`Error (${response.status}): ${serverMsg}`, 'error');
+        } catch (e) {
+          // Si falla el parseo del JSON, mostramos un mensaje genérico
+          notify(`Error ${e} : (${response.status})`, 'error');
+        }
+      } else {
+        // Opcional: muestra notificación de éxito si lo deseas
+        // notify(`Éxito (${response.status})`, 'success');
+      }
+      return response;
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [notify]);
+
 
   // Función para manejar la creación o edición de un proceso
   const handleFormSubmit = async (formData: ProcessData) => {
@@ -61,6 +96,7 @@ const App: React.FC = () => {
         });
       }
       if (response.ok) {
+        notify('Proceso creado/actualizado correctamente', 'success');
         setShowForm(false);
         setEditProcess(null);
         fetchProcesses();

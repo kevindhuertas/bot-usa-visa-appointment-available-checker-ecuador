@@ -1,4 +1,5 @@
 import sys
+from typing import List
 from selenium import webdriver
 import platform
 import logging
@@ -13,14 +14,14 @@ from email_alert import EmailAlert
 from page_credentials import USER_EMAIL, USER_PASSWORD
 
 url = "https://ais.usvisa-info.com/es-ec/niv/schedule/52492462/appointment"
-alert_sent = False
-location = '';
+alert_sent: bool = False
+# location = '';
 pageLoadTime = 10;
-allowed_location_to_save_appointment = ["Quito"]
-allowed_months_to_save_appointment = ["February", "March", "Febrero", "Marzo"]
-stop_month = ["May", "Mayo"]
+# allowed_location_to_save_appointment = ["Quito"]
+# allowed_months_to_save_appointment = ["February", "March", "Febrero", "Marzo"]
+# stop_month = ["May", "Mayo"]
 
-def verificar_cita():
+def verificar_cita(email: str, password: str, allowed_location_to_save_appointment: List[str], months: List[str], stop_month: List[str]):
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Ejecuta el navegador en modo headless (sin interfaz gráfica)
     chrome_options.add_argument("--disable-gpu")  # Necesario para algunos entornos headless
@@ -41,7 +42,7 @@ def verificar_cita():
     elif platform.system() == "Darwin":  # macOS
         driver_path = "./chromedriver"
     elif platform.system() == "Linux":  # Agregar compatibilidad con Linux
-        driver_path = "./chromedriver"
+        driver_path = "./chromedriverlinux"
     else:
         raise Exception("Sistema operativo no soportado. Solo Windows, macOS y Linux son compatibles.")
 
@@ -58,7 +59,7 @@ def verificar_cita():
         login_url = "https://ais.usvisa-info.com/es-ec/niv/users/sign_in"
 
         if current_url == login_url:
-            print("El navegador ha sido redireccionado a la página de inicio de sesión.")
+            logging.info("El navegador ha sido redireccionado a la página de inicio de sesión.")
             login(driver)
 
 
@@ -69,13 +70,12 @@ def verificar_cita():
 
             current_url = driver.current_url
             if current_url == url:
-                print("Redirección exitosa a la página de citas.")
-                check_dates(driver)
+                logging.info("Redirección exitosa a la página de citas.")
+                # check_dates(driver)
             else:
                 errorController("Hubo fallo al redireccionar después de inicio de sesión.")
         else:
             print("El navegador está en la página de citas o en otra página diferente.")
-            check_dates(driver)
     except Exception as e:
         errorController(f"Error crítico: {str(e)}")
     finally:

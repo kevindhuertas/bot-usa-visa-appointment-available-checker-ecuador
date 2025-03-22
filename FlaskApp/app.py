@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from process_manager import start_process, stop_process, get_process_status
-from models import add_process, update_process, delete_process, list_processes
+from models import add_process, get_process_by_email, update_process, delete_process, list_processes
 from flask_cors import CORS
 import json
 
@@ -14,7 +14,7 @@ def get_processes():
     processes = list_processes()
     # Actualizar el estado de cada proceso, por ejemplo, con psutil o comprobando el PID
     for proc in processes:
-        proc['status'] = get_process_status(proc.get('pid'))
+        proc['active'] = get_process_status(proc.get('pid'))
     return jsonify(processes), 200
 
 @app.route('/processes', methods=['POST'])
@@ -26,7 +26,9 @@ def create_process():
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing field {field}"}), 400
-
+    #Verificar que no se duplique
+    if(get_process_by_email(data['USER_EMAIL']) != None):
+        return jsonify({"error": f"{data['USER_EMAIL']} already exist"}), 400
     # Inicia el proceso mediante subprocess y obtiene el PID
     pid = start_process(data)
     data['pid'] = pid
@@ -38,6 +40,7 @@ def create_process():
 @app.route('/processes/<user_email>', methods=['PUT'])
 def edit_process(user_email):
     data = request.json
+    print(f"PUT: {data}")
     # Solo se permite editar si el proceso está inactivo
     process = update_process(user_email, data)
     if not process:
