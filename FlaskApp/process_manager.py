@@ -6,7 +6,7 @@ import signal
 def start_process(config):
     # Armamos la lista de argumentos, por ejemplo:
     args = [
-        "python3", "../main.py",
+        "python3", "./main.py",
         "--email", config["USER_EMAIL"],
         "--password", config["USER_PASSWORD"],
         "--locations", ",".join(config["allowed_location_to_save_appointment"]),

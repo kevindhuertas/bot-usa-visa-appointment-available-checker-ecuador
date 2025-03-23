@@ -11,6 +11,7 @@ export interface ProcessData {
   USER_PASSWORD: string;
   allowed_location_to_save_appointment: string[];
   allowed_months_to_save_appointment: string[];
+  blocked_days: string[];
   stop_month: string;
   pid?: number;
   status: 'active' | 'inactive';

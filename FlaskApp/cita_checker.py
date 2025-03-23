@@ -38,11 +38,11 @@ def verificar_cita(email: str, password: str, allowed_location_to_save_appointme
 
     # Detectar sistema operativo
     if platform.system() == "Windows":
-        driver_path = "./chromedriver.exe"
+        driver_path = "./drivers/chromedriver.exe"
     elif platform.system() == "Darwin":  # macOS
-        driver_path = "./chromedriver"
+        driver_path = "./drivers/chromedriver"
     elif platform.system() == "Linux":  # Agregar compatibilidad con Linux
-        driver_path = "./chromedriverlinux"
+        driver_path = "./drivers/chromedriverlinux"
     else:
         raise Exception("Sistema operativo no soportado. Solo Windows, macOS y Linux son compatibles.")
 
