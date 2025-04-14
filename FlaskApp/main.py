@@ -1,27 +1,44 @@
 import logging
+import os
 import time
 import argparse
 from datetime import datetime
-from FlaskApp.cita_checker import AppointmentCheck
-from utils import get_stop_month
+from cita_checker import AppointmentCheck
+from utils import get_log_filename, get_stop_month
 
 # Configurar logging
-logging.basicConfig(
-    filename='app.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+
 
 def main(email, password, locations, months, stop_month,blocked_days):
-    logging.info(f"Iniciando verificación de citas para {email}")
+    logger = setup_logger(email)
+    logger.info(f"Iniciando verificación de citas para {email}")
     try:
-        logging.info(f"RECIBIDO ARGS: {email} , {password},{locations},{months},{stop_month}")
-        checker = AppointmentCheck(email, password, locations, months, stop_month,blocked_days)
+        checker = AppointmentCheck(email, password, locations, months, stop_month,blocked_days,logger)
+        logger.info(f"RECIBIDO ARGS: {email} , {password},{locations},{months},{stop_month}")
         checker.check()
-        logging.info(f"Verificación completada exitosamente para {email}")
+        logger.info(f"Verificación completada exitosamente para {email}")
     except Exception as e:
-        logging.error(f"Error en la ejecución para {email}: {str(e)}")
+        logger.error(f"Error en la ejecución para {email}: {str(e)}")
+
+
+def setup_logger(email: str) -> logging.Logger:
+    """Configura un logger que escribe en un archivo específico dentro de la carpeta 'logs'."""
+    log_folder = "logs"   # Aseguramos que la carpeta 'logs' exista 
+    if not os.path.exists(log_folder):
+        os.makedirs(log_folder)
+    log_filename = get_log_filename(email)
+    logger = logging.getLogger(email)
+    logger.setLevel(logging.INFO)
+    # Evitar múltiples handlers en caso de reinicios
+    if not logger.handlers:
+        file_handler = logging.FileHandler(log_filename)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(levelname)s - %(message)s', 
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    return logger
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Ejecutar verificación de citas")

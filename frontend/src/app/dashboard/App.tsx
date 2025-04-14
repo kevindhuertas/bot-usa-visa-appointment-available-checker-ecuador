@@ -1,10 +1,11 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import { Container, Typography, Button, Box } from '@mui/material';
-import ProcessForm from './ProcessForm';
-import ProcessList from './ProcessList';
-import { Constants } from '@/Constants/Contants';
-import { useNotification } from '@/context/NotificationContext';
+"use client";
+import React, { useState, useEffect } from "react";
+import { Container, Typography, Button, Box } from "@mui/material";
+import ProcessForm from "../ProcessForm";
+import ProcessList from "../ProcessList";
+import { Constants } from "@/Constants/Contants";
+import { useNotification } from "@/context/NotificationContext";
+import Header from "@/components/Header";
 
 export interface ProcessData {
   USER_EMAIL: string;
@@ -14,7 +15,7 @@ export interface ProcessData {
   blocked_days: string[];
   stop_month: string;
   pid?: number;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 }
 
 const App: React.FC = () => {
@@ -25,18 +26,17 @@ const App: React.FC = () => {
   // Función para refrescar la lista de procesos
   const fetchProcesses = async () => {
     try {
-      console.info("BUSCANDO PROCESOS")
-      const response = await fetch(Constants.BOT_BASE_URL + 'processes');
+      console.info("BUSCANDO PROCESOS");
+      const response = await fetch(Constants.BOT_BASE_URL + "processes");
       if (!response.ok) {
-        notify('Error al obtener procesos', 'error');
-        throw new Error('Error al obtener los procesos');
+        notify("Error al obtener procesos", "error");
+        throw new Error("Error al obtener los procesos");
       }
       const data: ProcessData[] = await response.json();
       setProcesses(data);
-      notify('Procesos Obtenidos correctamente', 'success');
+      notify("Procesos Obtenidos correctamente", "success");
     } catch (error) {
-      
-      console.error('Error fetching processes:', error);
+      console.error("Error fetching processes:", error);
     }
   };
 
@@ -58,11 +58,11 @@ const App: React.FC = () => {
           const cloned = response.clone();
           const data = await cloned.json();
           // Se espera que el servidor envíe { error: "..." } o { message: "..." }
-          const serverMsg = data.error || data.message || 'Ocurrió un error';
-          notify(`Error (${response.status}): ${serverMsg}`, 'error');
+          const serverMsg = data.error || data.message || "Ocurrió un error";
+          notify(`Error (${response.status}): ${serverMsg}`, "error");
         } catch (e) {
           // Si falla el parseo del JSON, mostramos un mensaje genérico
-          notify(`Error ${e} : (${response.status})`, 'error');
+          notify(`Error ${e} : (${response.status})`, "error");
         }
       } else {
         // Opcional: muestra notificación de éxito si lo deseas
@@ -76,37 +76,39 @@ const App: React.FC = () => {
     };
   }, [notify]);
 
-
   // Función para manejar la creación o edición de un proceso
   const handleFormSubmit = async (formData: ProcessData) => {
     try {
       let response: Response;
       if (editProcess) {
         // Editar: PUT /processes/<USER_EMAIL>
-        response = await fetch(Constants.BOT_BASE_URL + `processes/${formData.USER_EMAIL}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
+        response = await fetch(
+          Constants.BOT_BASE_URL + `processes/${formData.USER_EMAIL}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData),
+          }
+        );
       } else {
         // Crear: POST /processes
-        response = await fetch(Constants.BOT_BASE_URL + 'processes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        response = await fetch(Constants.BOT_BASE_URL + "processes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
       }
       if (response.ok) {
-        notify('Proceso creado/actualizado correctamente', 'success');
+        notify("Proceso creado/actualizado correctamente", "success");
         setShowForm(false);
         setEditProcess(null);
         fetchProcesses();
       } else {
         const err = await response.json();
-        console.error('Error:', err);
+        console.error("Error:", err);
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error("Error submitting form:", error);
     }
   };
 
@@ -119,32 +121,39 @@ const App: React.FC = () => {
   // Funciones para detener y eliminar un proceso
   const handleStop = async (userEmail: string) => {
     try {
-      const response = await fetch(Constants.BOT_BASE_URL +`processes/${userEmail}/stop`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        Constants.BOT_BASE_URL + `processes/${userEmail}/stop`,
+        {
+          method: "POST",
+        }
+      );
       if (response.ok) {
         fetchProcesses();
       }
     } catch (error) {
-      console.error('Error stopping process:', error);
+      console.error("Error stopping process:", error);
     }
   };
 
   const handleDelete = async (userEmail: string) => {
     try {
-      const response = await fetch(Constants.BOT_BASE_URL + `processes/${userEmail}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        Constants.BOT_BASE_URL + `processes/${userEmail}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (response.ok) {
         fetchProcesses();
       }
     } catch (error) {
-      console.error('Error deleting process:', error);
+      console.error("Error deleting process:", error);
     }
   };
 
   return (
     <Container>
+      <Header/>
       <Box mt={4} mb={2}>
         <Typography variant="h4" component="h1">
           Administrador de Búsqueda de Citas
@@ -159,7 +168,7 @@ const App: React.FC = () => {
             setEditProcess(null);
           }}
         >
-          {showForm ? 'Cerrar Formulario' : 'Agregar nueva búsqueda'}
+          {showForm ? "Cerrar Formulario" : "Agregar nueva búsqueda"}
         </Button>
       </Box>
       {showForm && (

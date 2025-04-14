@@ -10,9 +10,12 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction
+  ListItemSecondaryAction,
+  IconButton,
 } from '@mui/material';
-import { ProcessData } from './App';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { ProcessData } from './dashboard/App';
+import ProcessDetailsDialog from './ProcessDetailsDialog';
 
 interface ProcessListProps {
   processes: ProcessData[];
@@ -27,27 +30,41 @@ const ProcessList: React.FC<ProcessListProps> = ({
   onStop,
   onDelete
 }) => {
-  // Estado para filtrar por email
+  // Estados para filtros
   const [emailFilter, setEmailFilter] = useState('');
-  // Estado para filtrar por status: todos, activos o inactivos
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  // Estados para el dialogo de detalles
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedProcess, setSelectedProcess] = useState<ProcessData | null>(null);
 
-  // Maneja el cambio en el filtro de email
+  // Manejador de filtro por email
   const handleEmailFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmailFilter(e.target.value);
   };
 
-  // Maneja el filtro de estado
+  // Manejador de filtro por estado
   const handleStatusFilter = (status: 'all' | 'active' | 'inactive') => {
     setStatusFilter(status);
   };
 
-  // Filtramos la lista según el email y el status
+  // Filtrado de procesos
   const filteredProcesses = processes.filter((proc) => {
     const matchesEmail = proc.USER_EMAIL.toLowerCase().includes(emailFilter.toLowerCase());
-    const matchesStatus = (statusFilter === 'all') || (proc.status === statusFilter);
+    const matchesStatus = statusFilter === 'all' || proc.status === statusFilter;
     return matchesEmail && matchesStatus;
   });
+
+  // Abre el dialogo de detalles
+  const handleOpenModal = (proc: ProcessData) => {
+    setSelectedProcess(proc);
+    setOpenModal(true);
+  };
+
+  // Cierra el dialogo de detalles
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedProcess(null);
+  };
 
   return (
     <Box>
@@ -55,45 +72,39 @@ const ProcessList: React.FC<ProcessListProps> = ({
         Lista de Procesos
       </Typography>
 
-      {/* Filtro por email */}
+      {/* Filtros */}
       <Box mb={2} display="flex" justifyContent="center" alignItems="center">
-  {/* Contenedor para centrar el contenido */}
-  <Box display="flex" justifyContent="space-between" alignItems="center" width="100%" >
-    {/* TextField a la izquierda */}
-    <TextField
-      label="Filtrar por email"
-      variant="outlined"
-      size="small"
-      value={emailFilter}
-      onChange={handleEmailFilterChange}
-    />
+        <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+          <TextField
+            label="Filtrar por email"
+            variant="outlined"
+            size="small"
+            value={emailFilter}
+            onChange={handleEmailFilterChange}
+          />
+          <Box>
+            <Chip
+              label="Todos"
+              color={statusFilter === 'all' ? 'primary' : 'default'}
+              onClick={() => handleStatusFilter('all')}
+              style={{ marginLeft: 8 }}
+            />
+            <Chip
+              label="Activos"
+              color={statusFilter === 'active' ? 'primary' : 'default'}
+              onClick={() => handleStatusFilter('active')}
+              style={{ marginLeft: 8 }}
+            />
+            <Chip
+              label="Inactivos"
+              color={statusFilter === 'inactive' ? 'primary' : 'default'}
+              onClick={() => handleStatusFilter('inactive')}
+              style={{ marginLeft: 8 }}
+            />
+          </Box>
+        </Box>
+      </Box>
 
-    {/* Chips a la derecha */}
-    <Box>
-      <Chip
-        label="Todos"
-        color={statusFilter === 'all' ? 'primary' : 'default'}
-        onClick={() => handleStatusFilter('all')}
-        style={{ marginLeft: 8 }}
-      />
-      <Chip
-        label="Activos"
-        color={statusFilter === 'active' ? 'primary' : 'default'}
-        onClick={() => handleStatusFilter('active')}
-        style={{ marginLeft: 8 }}
-      />
-      <Chip
-        label="Inactivos"
-        color={statusFilter === 'inactive' ? 'primary' : 'default'}
-        onClick={() => handleStatusFilter('inactive')}
-        style={{ marginLeft: 8 }}
-      />
-    </Box>
-  </Box>
-</Box>
-
-
- 
       {/* Lista de procesos */}
       {filteredProcesses.length === 0 ? (
         <Typography>No hay procesos que coincidan con el filtro.</Typography>
@@ -101,28 +112,31 @@ const ProcessList: React.FC<ProcessListProps> = ({
         <List>
           {filteredProcesses.map((proc) => (
             <ListItem key={proc.USER_EMAIL} divider>
-              {/* Círculo verde o gris según el pid */}
               <Box
                 sx={{
                   width: 12,
                   height: 12,
                   borderRadius: '50%',
+                  // backgroundColor: proc.pid ? 'green' : proc.status == 'active' ? 'gray': 'red',
                   backgroundColor: proc.pid ? 'green' : 'gray',
                   marginRight: 2,
                 }}
               />
-
               <ListItemText
                 primary={proc.USER_EMAIL}
                 secondary={`Estado: ${proc.status}`}
               />
-
               <ListItemSecondaryAction>
+                {/* Botón para ver detalles (ícono de ojo) */}
+                <IconButton onClick={() => handleOpenModal(proc)} color="primary">
+                  <VisibilityIcon />
+                </IconButton>
                 {proc.status === 'active' ? (
                   <Button
                     variant="contained"
                     color="primary"
                     onClick={() => onStop(proc.USER_EMAIL)}
+                    style={{ marginLeft: 8 }}
                   >
                     Detener
                   </Button>
@@ -131,7 +145,7 @@ const ProcessList: React.FC<ProcessListProps> = ({
                     <Button
                       variant="outlined"
                       onClick={() => onEdit(proc)}
-                      style={{ marginRight: 8 }}
+                      style={{ marginLeft: 8, marginRight: 8 }}
                     >
                       Editar
                     </Button>
@@ -139,6 +153,7 @@ const ProcessList: React.FC<ProcessListProps> = ({
                       variant="contained"
                       color="error"
                       onClick={() => onDelete(proc.USER_EMAIL)}
+                      style={{ marginLeft: 8 }}
                     >
                       Eliminar
                     </Button>
@@ -149,6 +164,13 @@ const ProcessList: React.FC<ProcessListProps> = ({
           ))}
         </List>
       )}
+
+      {/* Componente de dialogo para ver detalles */}
+      <ProcessDetailsDialog
+        open={openModal}
+        process={selectedProcess}
+        onClose={handleCloseModal}
+      />
     </Box>
   );
 };

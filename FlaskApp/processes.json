@@ -3,22 +3,34 @@
         "USER_EMAIL": "kevindhuertas@gmail.com",
         "USER_PASSWORD": "Password",
         "allowed_location_to_save_appointment": [
-            "Quito",
-            "Guayaquil"
+            "Quito"
         ],
         "allowed_months_to_save_appointment": [
-            "marzo",
             "abril",
             "mayo",
-            "junio",
-            "julio"
+            "junio"
         ],
         "stop_month": "julio",
         "blocked_days": [
             "2025-03-27",
-            "2025-03-23",
-            "2025-03-24",
-            "2025-03-25"
+            "2025-03-29"
+        ],
+        "status": "inactive",
+        "pid": ""
+    },
+    {
+        "USER_EMAIL": "demo2@yopmail.com",
+        "USER_PASSWORD": "Xdjuazxd0*",
+        "allowed_location_to_save_appointment": [
+            "Guayaquil"
+        ],
+        "allowed_months_to_save_appointment": [
+            "abril",
+            "mayo"
+        ],
+        "stop_month": "julio",
+        "blocked_days": [
+            "2025-03-28"
         ],
         "status": "inactive",
         "pid": ""

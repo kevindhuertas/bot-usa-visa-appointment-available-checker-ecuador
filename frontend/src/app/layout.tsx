@@ -3,7 +3,8 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import EmotionProvider from "./EmotionProvider";
 import { NotificationProvider } from "@/context/NotificationContext";
-import MuiThemeProvider from "@/MuiThemeProvider";
+import MuiThemeProvider from "@/context/MuiThemeProvider";
+import { AuthProvider } from "@/context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,10 +36,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${geistSans.variable} ${geistMono.variable}`}>
       <EmotionProvider>
-      <MuiThemeProvider>
-        <NotificationProvider>
-          {children}
-        </NotificationProvider>
+        <MuiThemeProvider>
+          <NotificationProvider>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </NotificationProvider>
         </MuiThemeProvider>
       </EmotionProvider>
       </body>

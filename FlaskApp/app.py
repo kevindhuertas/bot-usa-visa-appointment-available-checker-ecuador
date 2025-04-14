@@ -1,4 +1,6 @@
+import os
 from flask import Flask, request, jsonify
+from utils import get_log_filename, get_paginated_logs
 from process_manager import start_process, stop_process, get_process_status
 from models import add_process, get_process_by_email, update_process, delete_process, list_processes
 from flask_cors import CORS
@@ -67,6 +69,45 @@ def delete_process_endpoint(user_email):
     if not result:
         return jsonify({"error": "No se pudo eliminar. Verifica que el proceso esté inactivo."}), 400
     return jsonify({"message": "Proceso eliminado exitosamente"}), 200
+    
+    
+@app.route('/logs/<email>', methods=['GET'])
+def get_logs(email: str):
+    """
+    Endpoint para obtener logs paginados para un email.
+    Parámetros opcionales (query):
+      - limit: número máximo de logs a retornar (default 100)
+      - offset: cantidad de logs a saltar (default 0)
+    Devuelve:
+      - logs: lista de líneas (más recientes primero)
+      - offset: valor actual de offset
+      - limit: valor del límite
+      - total: total de líneas contadas (hasta donde se pudo recorrer)
+      - has_more: True si hay más líneas que no se retornaron
+    """
+    limit = request.args.get('limit', default=100, type=int)
+    offset = request.args.get('offset', default=0, type=int)
+
+    log_file = get_log_filename(email)
+    if not os.path.exists(log_file):
+        return jsonify({
+            "logs": [],
+            "offset": offset,
+            "limit": limit,
+            "total": 0,
+            "has_more": False
+        }), 200
+
+    logs, total = get_paginated_logs(log_file, offset, limit)
+    has_more = (offset + limit) < total
+    return jsonify({
+        "logs": logs,
+        "offset": offset,
+        "limit": limit,
+        "total": total,
+        "has_more": has_more
+    }), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True,port=5001)

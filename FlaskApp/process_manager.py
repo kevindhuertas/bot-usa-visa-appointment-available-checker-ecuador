@@ -11,6 +11,7 @@ def start_process(config):
         "--password", config["USER_PASSWORD"],
         "--locations", ",".join(config["allowed_location_to_save_appointment"]),
         "--months", ",".join(config["allowed_months_to_save_appointment"]),
+        "--blocked_days", ",".join(config["blocked_days"]),
         "--stop_month", config["stop_month"]
     ]
     # Iniciar el proceso en background

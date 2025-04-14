@@ -19,7 +19,9 @@ class AppointmentCheck:
                 allowed_location_to_save_appointment: List[str],
                 months: List[str],
                 stop_month: List[str],
-                blocked_days: List[str]):
+                blocked_days: List[str],
+                logger: logging.Logger
+                ): #format: ["2025-03-27","2025-03-23"]
         self.url = "https://ais.usvisa-info.com/es-ec/niv/schedule/52492462/appointment"
         self.alert_sent = False
         self.location = ''
@@ -30,6 +32,7 @@ class AppointmentCheck:
         self.blocked_days = blocked_days
         self.email = email
         self.password = password
+        self.logger = logger
 
         chrome_options = Options()
         chrome_options.add_argument("--headless")  # Ejecuta el navegador en modo headless (sin interfaz gráfica)
@@ -85,10 +88,10 @@ class AppointmentCheck:
             self.driver.quit() #VERIFICAR FINAL del bot======= 
 
     def error_controller(self, e):
-        logging.error(f"Error: {e}")
+        self.logger.error(f"Error: {e}")
 
     def print_controller(self, e):
-        logging.info(f"Error: {e}")
+        self.logger.info(f"{e}")
 
     def login(self):
         try:
@@ -185,11 +188,21 @@ class AppointmentCheck:
     def check_calendar_group(self, group_class):
         try:
             calendar_group = self.driver.find_element(By.CLASS_NAME, group_class)
-            month = calendar_group.find_element(By.CLASS_NAME, "ui-datepicker-month").text
+            month_element = calendar_group.find_element(By.CLASS_NAME, "ui-datepicker-month")
+            month = month_element.text.strip().lower()
             # print(f"Verificando el mes: {month}")
             # Obtener los días del mes
             tbody = calendar_group.find_element(By.TAG_NAME, "tbody")
             rows = tbody.find_elements(By.TAG_NAME, "tr")
+            month_map = {
+                'january': '01', 'febrero': '02', 'february': '02',
+                'marzo': '03', 'march': '03', 'abril': '04', 'april': '04',
+                'mayo': '05', 'may': '05', 'junio': '06', 'june': '06',
+                'julio': '07', 'july': '07', 'agosto': '08', 'august': '08',
+                'septiembre': '09', 'september': '09', 'octubre': '10',
+                'october': '10', 'noviembre': '11', 'november': '11',
+                'diciembre': '12', 'december': '12'
+            }
 
             for row in rows:
                 days = row.find_elements(By.TAG_NAME, "td")
@@ -197,13 +210,27 @@ class AppointmentCheck:
                     if "ui-datepicker-unselectable" not in day.get_attribute("class"):
                         a_tag = day.find_elements(By.TAG_NAME, "a")
                         if a_tag:
-                            day_number = a_tag[0].text
+                            day_number = a_tag[0].text.zfill(2)
+                            current_month = month_map.get(month, '00')
+                            # Crear patrón MM-DD para comparación
+                            current_date = f"{current_month}-{day_number}"
+                            is_blocked = any(
+                                blocked_date.endswith(current_date)
+                                for blocked_date in self.blocked_days
+                            )
                             self.alert_available_date(month, day_number)
                             
-                            if month in self.allowed_months_to_save_appointment:
-                                if self.location in self.allowed_location_to_save_appointment:
-                                    a_tag[0].click()
-                                    self.auto_select_date(month, day_number)
+                            if month.lower() in [m.lower() for m in self.allowed_months_to_save_appointment]:
+                                if self.location.lower() in [l.lower() for l in self.allowed_location_to_save_appointment]:
+                                    if not is_blocked:
+                                        a_tag[0].click()
+                                        self.auto_select_date(month, day_number)
+                                    else:
+                                        self.print_controller(f"Fecha bloqueada detectada, cita encontrada el: {current_date}")
+                                else:
+                                    self.print_controller(f"Fecha bloqueada detectada, cita encontrada el: {current_date} en {self.location} ")
+                            else:
+                                self.print_controller(f"Fecha fuera de locacion permitido, cita encontrada el: {current_date} en {self.location}")
         except Exception as e:
             self.error_controller(f"Error durante la verificación del grupo de calendario: {e}")
 

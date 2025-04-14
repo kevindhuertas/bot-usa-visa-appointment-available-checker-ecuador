@@ -1,6 +1,8 @@
 import json
 import os
 
+from main import get_log_filename
+
 JSON_FILE = 'processes.json'
 
 def load_processes():
@@ -61,6 +63,20 @@ def delete_process(user_email):
         new_processes.append(proc)
     if deleted:
         save_processes(new_processes)
+        # delete_log_file(user_email)
         return True
     return False
+
+
+def delete_log_file(email: str) -> bool:
+    log_file = get_log_filename(email)
+    try:
+        if os.path.exists(log_file):
+            os.remove(log_file)
+            return True
+        else:
+            return True  # No existe, se considera eliminado
+    except Exception as e:
+        print(f"ERROR eliminando el LOG para {email}: {str(e)}")
+        return False
 
