@@ -16,6 +16,7 @@ import Wrapper from '../layout/Wrapper/Wrapper';
 import { appWithTranslation } from 'next-i18next';
 import App from '../layout/App/App';
 import AsideRoutes from '../layout/Aside/AsideRoutes';
+import RequireAuth from '../context/requireAuth';
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
 	getOS();
@@ -49,8 +50,10 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
 							<App>
 								<AsideRoutes />
 								<Wrapper>
-									{/* eslint-disable-next-line react/jsx-props-no-spreading */}
-									<Component {...pageProps} />
+									<RequireAuth>
+										{/* eslint-disable-next-line react/jsx-props-no-spreading */}
+										<Component {...pageProps} />
+									</RequireAuth>
 								</Wrapper>
 							</App>
 							<Portal id='portal-notification'>

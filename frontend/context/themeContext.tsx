@@ -27,10 +27,31 @@ export const ThemeContextProvider: FC<IThemeContextProviderProps> = ({ children 
 	// @ts-ignore
 	const mobileDesign = deviceScreen?.width <= process.env.NEXT_PUBLIC_MOBILE_BREAKPOINT_SIZE;
 
+	const getInitialDarkMode = (): boolean => {
+		if (typeof window === 'undefined') {
+			return process.env.NEXT_PUBLIC_DARK_MODE === 'true';
+		}
+
+		// Client-side logic:
+		// 1. Check OS preference using matchMedia
+		const prefersDarkMQ = window.matchMedia('(prefers-color-scheme: dark)');
+		// Check if matchMedia is supported and has a definite value
+		if (prefersDarkMQ && typeof prefersDarkMQ.matches === 'boolean') {
+			return prefersDarkMQ.matches;
+		}
+
+		// 2. Fallback: OS preference not detectable, check localStorage
+		const savedPreference = localStorage.getItem('facit_darkModeStatus');
+		if (savedPreference !== null) {
+			return savedPreference === 'true';
+		}
+		// 3. Fallback: No OS preference detected, no localStorage value
+		return process.env.NEXT_PUBLIC_DARK_MODE === 'true';
+	};
+
+
 	const [darkModeStatus, setDarkModeStatus] = useState(
-		typeof window !== 'undefined' && localStorage.getItem('facit_darkModeStatus')
-			? localStorage.getItem('facit_darkModeStatus') === 'true'
-			: process.env.NEXT_PUBLIC_DARK_MODE === 'true',
+		getInitialDarkMode
 	);
 
 	useEffect(() => {

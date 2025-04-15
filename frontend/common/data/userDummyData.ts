@@ -55,84 +55,10 @@ const grace: IUserProps = {
 	password: '@ABC123',
 };
 
-const jane: IUserProps = {
-	id: '3',
-	username: 'jane',
-	name: 'Jane',
-	surname: 'Lee',
-	position: 'Staff',
-	email: 'jane@omtanke.studio',
-	src: UserImage3,
-	isOnline: true,
-	color: 'secondary',
-	services: [SERVICES.YOGA, SERVICES.HANDBALL, SERVICES.CRICKET],
-	password: '@ABC123',
-};
-
-const ryan: IUserProps = {
-	id: '4',
-	username: 'ryan',
-	name: 'Ryan',
-	surname: 'McGrath',
-	position: 'Worker',
-	email: 'ryan@omtanke.studio',
-	src: UserImage4,
-	isOnline: false,
-	color: 'info',
-	services: [SERVICES.HIKING, SERVICES.FOOTBALL, SERVICES.HANDBALL],
-	password: '@ABC123',
-};
-
-const ella: IUserProps = {
-	id: '5',
-	username: 'ella',
-	name: 'Ella',
-	surname: 'Oliver',
-	position: 'Worker',
-	email: 'ella@omtanke.studio',
-	src: UserImage5,
-	isOnline: false,
-	color: 'success',
-	services: [SERVICES.ICE_SKATING, SERVICES.TENNIS, SERVICES.SNOWBOARDING, SERVICES.YOGA],
-	password: '@ABC123',
-};
-
-const chloe: IUserProps = {
-	id: '6',
-	username: 'chloe',
-	name: 'Chloe',
-	surname: 'Walker',
-	position: 'Staff',
-	email: 'chloe@omtanke.studio',
-	src: UserImage6,
-	isOnline: true,
-	color: 'warning',
-	services: [SERVICES.VOLLEYBALL, SERVICES.CRICKET],
-	password: '@ABC123',
-};
-
-const sam: IUserProps = {
-	id: '7',
-	username: 'sam',
-	name: 'Sam',
-	surname: 'Roberts',
-	position: 'Worker',
-	email: 'sam@omtanke.studio',
-	src: UserImage7,
-	isOnline: false,
-	color: 'danger',
-	fullImage: User7Landing,
-	password: '@ABC123',
-};
 
 const USERS: { [key: string]: IUserProps } = {
 	JOHN: john,
 	GRACE: grace,
-	JANE: jane,
-	RYAN: ryan,
-	ELLA: ella,
-	CHLOE: chloe,
-	SAM: sam,
 };
 
 export function getUserDataWithUsername(username: string): IUserProps {

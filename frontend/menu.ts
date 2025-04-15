@@ -17,13 +17,13 @@ export const demoPagesMenu = {
 	login: {
 		id: 'login',
 		text: 'Login',
-		path: 'auth-pages/login',
+		path: 'login/sign-in',
 		icon: 'Login',
 	},
 	signUp: {
 		id: 'signUp',
 		text: 'Sign Up',
-		path: 'auth-pages/sign-up',
+		path: 'login/sign-up',
 		icon: 'PersonAdd',
 	},
 	page404: {
