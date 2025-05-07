@@ -43,22 +43,23 @@ const DashboardHeader = () => {
 	return (
 		<Header>
 			<HeaderLeft>
-				<Popovers
+				{/* <Popovers
 					title='DashboardHeader.tsx'
 					desc={<code>pages/_layout/_headers/DashboardHeader.tsx</code>}>
-					HeaderLeft
-				</Popovers>
-				<code>DashboardHeader.tsx</code>
+					Dashboad
+				</Popovers> */}
+				<span>Administrador de Búsqueda de Citas</span>
+				{/* <code>DashboardHeader.tsx</code> */}
 			</HeaderLeft>
 			<HeaderRight>
 				<div className='row g-3 align-items-center'>
 					<div className='col-auto'>
-						<Popovers
+						{/* <Popovers
 							title='DashboardHeader.tsx'
 							desc={<code>pages/_layout/_headers/DashboardHeader.tsx</code>}>
 							HeaderRight
-						</Popovers>
-						<code className='ps-3'>DashboardHeader.tsx</code>
+						</Popovers> */}
+						{/* <code className='ps-3'>DashboardHeader.tsx</code> */}
 					</div>
 
 					{/* Dark Mode */}

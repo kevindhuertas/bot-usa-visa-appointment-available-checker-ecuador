@@ -33,13 +33,16 @@ const DefaultAside = () => {
 			</AsideHead>
 			<AsideBody>
 				<Navigation menu={dashboardPagesMenu} id='aside-dashboard' />
+				{/* <Navigation menu={demoPagesMenu} id='aside-dashboard' /> */}
+				{/* <Navigation menu={pageLayoutTypesPagesMenu} id='aside-dashboard' /> */}
+				{/* <Navigation menu={pageLayoutTypesPagesMenu} id='aside-dashboard' /> */}
 				<NavigationLine />
 				{!doc && (
 					<>
-						<Navigation menu={demoPagesMenu} id='aside-demo-pages' />
-						<NavigationLine />
-						<Navigation menu={pageLayoutTypesPagesMenu} id='aside-menu' />
-						<NavigationLine />
+						{/* <Navigation menu={demoPagesMenu} id='aside-demo-pages' /> */}
+						{/* <NavigationLine /> */}
+						{/* <Navigation menu={pageLayoutTypesPagesMenu} id='aside-menu' /> */}
+						{/* <NavigationLine />
 						<nav>
 							<div className='navigation'>
 								<div className='navigation-item'>
@@ -61,14 +64,14 @@ const DefaultAside = () => {
 									</span>
 								</div>
 							</div>
-						</nav>
+						</nav> */}
 					</>
 				)}
 
-				{asideStatus && doc && <div className='p-4'>Documentation</div>}
+				{/* {asideStatus && doc && <div className='p-4'>Documexdxdxdntation</div>} */}
 			</AsideBody>
 			<AsideFoot>
-				<nav aria-label='aside-bottom-menu'>
+				{/* <nav aria-label='aside-bottom-menu'>
 					<div className='navigation'>
 						<div
 							role='presentation'
@@ -102,7 +105,8 @@ const DefaultAside = () => {
 							</span>
 						</div>
 					</div>
-				</nav>
+				</nav> */}
+				<div className='mb-3'></div>
 				<User />
 			</AsideFoot>
 		</Aside>

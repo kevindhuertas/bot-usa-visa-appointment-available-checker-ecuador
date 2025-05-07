@@ -14,6 +14,7 @@ import ThemeContext from '../context/themeContext';
 import useDarkMode from '../hooks/useDarkMode';
 import Page from '../layout/Page/Page';
 import Popovers from '../components/bootstrap/Popovers';
+import App from './dashboard/App';
 
 const Index: NextPage = () => {
 	const { mobileDesign } = useContext(ThemeContext);
@@ -41,10 +42,11 @@ const Index: NextPage = () => {
 	return (
 		<PageWrapper>
 			<Head>
-				<title>Dashboard</title>
+				<title>Administrador de Búsqueda de Citas</title>
 			</Head>
-			<SubHeader>
+			{/* <SubHeader>
 				<SubHeaderLeft>
+					<span>Administrador de Búsqueda de Citas </span>
 					<Popovers title='index.tsx' desc={<code>pages/index.tsx</code>}>
 						SubHeaderLeft
 					</Popovers>
@@ -57,16 +59,9 @@ const Index: NextPage = () => {
 					</Popovers>
 					<code>index.tsx</code>
 				</SubHeaderRight>
-			</SubHeader>
+			</SubHeader> */}
 			<Page>
-				<div className='row'>
-					<div className='col-12 mb-3'>
-						<Popovers title='index.tsx' desc={<code>pages/index.tsx</code>}>
-							Page EXAMPLE
-						</Popovers>
-						<code className='ps-3'>index.tsx</code>
-					</div>
-				</div>
+				<App />
 			</Page>
 		</PageWrapper>
 	);

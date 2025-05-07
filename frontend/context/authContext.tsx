@@ -10,10 +10,10 @@ export interface IAuthContextProps {
 }
 // Inicializa con valores por defecto que coincidan con el estado inicial
 const AuthContext = createContext<IAuthContextProps>({
-    user: '',
-    setUser: () => {},
-    userData: {},
-    loading: true, // <-- Inicialmente cargando
+	user: '',
+	setUser: () => {},
+	userData: {},
+	loading: true, // <-- Inicialmente cargando
 });
 
 interface IAuthContextProviderProps {
@@ -28,31 +28,32 @@ export const AuthContextProvider: FC<IAuthContextProviderProps> = ({ children })
 
 	// Efecto para leer localStorage SOLO en el cliente DESPUÉS del montaje inicial
 	useEffect(() => {
-        // Lee el usuario almacenado
+		// Lee el usuario almacenado
 		const storedUser = localStorage.getItem('facit_authUsername');
 
-        // Si se encuentra un usuario válido en localStorage (y no es 'null' o 'undefined' como string)
-        // Actualiza el estado 'user'. Si no, se queda como ''.
+		// Si se encuentra un usuario válido en localStorage (y no es 'null' o 'undefined' como string)
+		// Actualiza el estado 'user'. Si no, se queda como ''.
 		if (storedUser && storedUser !== 'null' && storedUser !== 'undefined') {
 			setUser(storedUser);
 		}
 
-        // Marca la carga como completa DESPUÉS de intentar leer localStorage.
+		// Marca la carga como completa DESPUÉS de intentar leer localStorage.
 		setLoading(false);
 	}, []); // El array vacío asegura que se ejecute solo una vez al montar en el cliente
 
 	// Efecto para guardar en localStorage cuando 'user' cambia (después de la carga inicial)
 	useEffect(() => {
-        // Solo guarda si no estamos en el estado inicial '' o si realmente cambió
-        // Y evita guardar durante el renderizado del servidor (aunque useEffect no corre ahí)
-        if (typeof window !== 'undefined') {
-		    localStorage.setItem('facit_authUsername', user);
-        }
+		// Solo guarda si no estamos en el estado inicial '' o si realmente cambió
+		// Y evita guardar durante el renderizado del servidor (aunque useEffect no corre ahí)
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('facit_authUsername', user);
+		}
 	}, [user]);
 
 	// Efecto para obtener datos del usuario cuando 'user' cambia (y no está vacío)
 	useEffect(() => {
-		if (user) { // Comprueba si user tiene un valor (no es '')
+		if (user) {
+			// Comprueba si user tiene un valor (no es '')
 			setUserData(getUserDataWithUsername(user));
 		} else {
 			setUserData({});
@@ -81,9 +82,9 @@ export default AuthContext;
 
 // (Opcional pero recomendado) Hook personalizado para consumir el contexto
 export const useAuth = () => {
-    const context = React.useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthContextProvider');
-    }
-    return context;
+	const context = React.useContext(AuthContext);
+	if (context === undefined) {
+		throw new Error('useAuth must be used within an AuthContextProvider');
+	}
+	return context;
 };

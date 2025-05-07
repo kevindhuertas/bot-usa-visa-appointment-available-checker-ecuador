@@ -7,7 +7,8 @@ const footers = [
 	{ path: demoPagesMenu.login.path, element: null, exact: true },
 	{ path: demoPagesMenu.signUp.path, element: null, exact: true },
 	{ path: demoPagesMenu.page404.path, element: null, exact: true },
-	{ path: '/*', element: <DefaultFooter />, exact: true },
+	{ path: '/*', element: null, exact: true },
+	// { path: '/*', element: <DefaultFooter />, exact: true },
 ];
 
 export default footers;

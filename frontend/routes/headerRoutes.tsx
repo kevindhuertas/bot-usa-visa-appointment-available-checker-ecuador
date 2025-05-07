@@ -11,9 +11,10 @@ const headers = [
 	{ path: demoPagesMenu.signUp.path, element: null },
 	{ path: demoPagesMenu.page404.path, element: null },
 	{ path: dashboardPagesMenu.dashboard.path, element: <DashboardHeader /> },
+	{ path: dashboardPagesMenu.profile.path, element: <DashboardHeader /> },
 	{
 		path: `/*`,
-		element: <DefaultHeader />,
+		element: <DashboardHeader />,
 	},
 ];
 

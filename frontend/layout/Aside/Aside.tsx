@@ -61,7 +61,7 @@ const Aside: FC<IAsideProps> = ({ children }) => {
 				})}>
 				{children}
 			</motion.aside>
-			{mounted && asideStatus && hasTouchButton && isModernDesign && (
+			{/* {mounted && asideStatus && hasTouchButton && isModernDesign && (
 				<>
 					<motion.div className='aside-drag-area' ref={constraintsRef} />
 					<Tooltips title='Toggle Aside' flip={['top', 'right']}>
@@ -78,7 +78,7 @@ const Aside: FC<IAsideProps> = ({ children }) => {
 						/>
 					</Tooltips>
 				</>
-			)}
+			)} */}
 		</>
 	);
 };

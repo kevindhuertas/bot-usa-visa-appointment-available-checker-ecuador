@@ -6,6 +6,13 @@ export const dashboardPagesMenu = {
 		icon: 'Dashboard',
 		subMenu: null,
 	},
+	profile: {
+		id: 'profile',
+		text: 'Profile',
+		path: '/profile',
+		icon: 'Person',
+		subMenu: null,
+	},
 };
 
 export const demoPagesMenu = {

@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import classNames from 'classnames';
-import { demoPagesMenu } from '../../menu';
+import { dashboardPagesMenu, demoPagesMenu } from '../../menu';
 import useDarkMode from '../../hooks/useDarkMode';
 import Collapse from '../../components/bootstrap/Collapse';
 import { NavigationLine } from '../Navigation/Navigation';
@@ -20,7 +20,7 @@ const User = () => {
 	const handleItem = useNavigationItemHandle();
 	const { darkModeStatus, setDarkModeStatus } = useDarkMode();
 
-	const [collapseStatus, setCollapseStatus] = useState<boolean>(false);
+	const [collapseStatus, setCollapseStatus] = useState<boolean>(true);
 
 	const { t } = useTranslation(['translation', 'menu']);
 
@@ -29,7 +29,10 @@ const User = () => {
 			<div
 				className={classNames('user', { open: collapseStatus })}
 				role='presentation'
-				onClick={() => setCollapseStatus(!collapseStatus)}>
+				// onClick={() => setCollapseStatus(!collapseStatus)}>
+				onClick={() => {
+					router.push(`/${dashboardPagesMenu.profile.path}`);
+				}}>
 				<div className='user-avatar'>
 					{!!userData?.src && (
 						// eslint-disable-next-line @next/next/no-img-element
@@ -38,16 +41,17 @@ const User = () => {
 				</div>
 				<div className='user-info'>
 					<div className='user-name'>
-						<Popovers title='User.tsx' desc={<code>layout/User/User.tsx</code>}>
+						{userData?.surname}
+						{/* <Popovers title='User.tsx' desc={<code>layout/User/User.tsx</code>}>
 							{`${userData?.name} ${userData?.surname}`}
-						</Popovers>
-						<code className='ps-2'>User.tsx</code>
+						</Popovers> */}
 					</div>
 					<div className='user-sub-title'>
-						<Popovers title='User.tsx' desc={<code>layout/User/User.tsx</code>}>
+						{/* <Popovers title='User.tsx' desc={<code>layout/User/User.tsx</code>}>
 							User
-						</Popovers>
-						<code className='ps-2'>User.tsx</code>
+						</Popovers> */}
+						{userData?.position}
+						{/* <code className='ps-2'>User.tsx</code> */}
 					</div>
 				</div>
 			</div>
@@ -55,7 +59,7 @@ const User = () => {
 			<Collapse isOpen={collapseStatus} className='user-menu'>
 				<nav aria-label='aside-bottom-user-menu'>
 					<div className='navigation'>
-						<div
+						{/* <div
 							role='presentation'
 							className='navigation-item cursor-pointer'
 							onClick={() =>
@@ -71,7 +75,7 @@ const User = () => {
 									<span className='navigation-text'>{t('menu:Profile')}</span>
 								</span>
 							</span>
-						</div>
+						</div> */}
 						<div
 							role='presentation'
 							className='navigation-item cursor-pointer'
