@@ -4,7 +4,7 @@ import Head from 'next/head';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
 import { FC, useCallback, useContext, useState } from 'react';
-import AuthContext from '../../../context/authContext';
+import AuthContext, { useAuth } from '../../../context/authContext';
 import useDarkMode from '../../../hooks/useDarkMode';
 import USERS, { getUserDataWithUsername } from '../../../common/data/userDummyData';
 import { useFormik } from 'formik';
@@ -20,6 +20,7 @@ import FormGroup from '../../../components/bootstrap/forms/FormGroup';
 import Input from '../../../components/bootstrap/forms/Input';
 // import Spinner from '../../../components/bootstrap/Spinner'; // Spinner ya no es necesario sin el botón "Continue"
 import PropTypes from 'prop-types';
+import Spinner from '../../../components/bootstrap/Spinner';
 
 interface ILoginHeaderProps {
 	isNewUser?: boolean;
@@ -35,8 +36,8 @@ const LoginHeader: FC<ILoginHeaderProps> = ({ isNewUser }) => {
 	}
 	return (
 		<>
-			<div className='text-center h1 fw-bold mt-5'>Welcome,</div>
-			<div className='text-center h4 text-muted mb-5'>Sign in to continue!</div>
+			<div className='text-center h1 fw-bold mt-5'>Bienvenido</div>
+			<div className='text-center h4 text-muted mb-5'>Inicia sesión para continuar!</div>
 		</>
 	);
 };
@@ -47,7 +48,7 @@ interface ILoginProps {
 const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 	const router = useRouter();
 
-	const { setUser } = useContext(AuthContext);
+	const { login, loading, error } = useAuth();
 
 	const { darkModeStatus } = useDarkMode();
 
@@ -61,62 +62,54 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 		return !!getUserDataWithUsername(username);
 	};
 
-	const passwordCheck = (username: string, password: string) => {
-		// Añadir una comprobación por si el usuario no existe para evitar errores
-		const userData = getUserDataWithUsername(username);
-		return userData && userData.password === password;
-	};
+	const handleSuccessfulLogin = useCallback(() => {
+		router.push('/'); // O a la página que desees después del login
+	}, [router]);
 
-	
+	// const passwordCheck = (username: string, password: string) => {
+	// 	// Añadir una comprobación por si el usuario no existe para evitar errores
+	// 	const userData = getUserDataWithUsername(username);
+	// 	return userData && userData.password === password;
+	// };
+
 	const formik = useFormik({
-		enableReinitialize: true,
 		initialValues: {
-			// Puedes dejar valores iniciales o ponerlos vacíos
-			// loginUsername: '', // USERS.JOHN.username,
-			// loginPassword: '', // USERS.JOHN.password,
-			loginUsername: USERS.JOHN.username,
-			loginPassword: USERS.JOHN.password,
+			// Puedes usar un usuario de prueba o dejar vacío
+			// loginIdentifier: USERS.JOHN.username, // Si tenías datos de prueba
+			// loginPassword: USERS.JOHN.password,
+			loginIdentifier: '',
+			loginPassword: '',
 		},
 		validate: (values) => {
-			const errors: { loginUsername?: string; loginPassword?: string } = {};
-
-			if (!values.loginUsername) {
-				errors.loginUsername = 'Required';
-			} else if (!usernameCheck(values.loginUsername)) {
-				// Validación de existencia de usuario aquí si se desea
-				errors.loginUsername = 'User not found.';
+			const errors: { loginIdentifier?: string; loginPassword?: string } = {};
+			if (!values.loginIdentifier) {
+				errors.loginIdentifier = 'Usuario o Email es requerida';
 			}
-
 			if (!values.loginPassword) {
-				errors.loginPassword = 'Required';
+				errors.loginPassword = 'Contraseña es requerida';
 			}
-
 			return errors;
 		},
-		validateOnChange: false, // Validar solo al enviar o perder foco si se prefiere
-		validateOnBlur: true,
-		onSubmit: (values) => {
-			// Ya no necesitamos setIsLoading(true/false) aquí si la validación es síncrona
-			// La validación de existencia ya se hizo en 'validate'
-			// Solo necesitamos comprobar la contraseña
-			if (passwordCheck(values.loginUsername, values.loginPassword)) {
-				if (setUser) {
-					setUser(values.loginUsername);
-				}
-				handleOnClick(); // Redirigir al dashboard o página principal
-			} else {
-				// Asegurarse de que el error de usuario no existente no sobreescriba este
-				if (usernameCheck(values.loginUsername)) {
-					formik.setFieldError('loginPassword', 'Incorrect password.');
-				}
-				// Si el usuario no existe, el error ya estará en loginUsername por la validación
+		onSubmit: async (values, { setSubmitting, setFieldError }) => {
+			// No necesitamos setSubmitting(true/false) aquí si `loading` del contexto
+			// ya lo maneja visualmente, o Formik lo hace con isSubmitting.
+			// Puedes usar formik.isSubmitting para deshabilitar el botón si lo deseas.
+			try {
+				await login(values.loginIdentifier, values.loginPassword); // Llama a la función de login del contexto
+				// await new Promise((resolve) => setTimeout(resolve, 2000));
+				handleSuccessfulLogin();
+			} catch (apiError: any) {
+				// El error ya fue seteado en el contexto, pero también podemos mostrarlo en el form
+				// El 'apiError' aquí es el que relanzamos desde la función login del contexto
+				setFieldError(
+					'loginPassword',
+					apiError.message || 'Login failed. Please check your credentials.',
+				);
+			} finally {
+				// setSubmitting(false); // Formik maneja esto automáticamente si la función onSubmit es async
 			}
 		},
 	});
-
-	// Ya no necesitamos isLoading ni handleContinue
-	// const [isLoading, setIsLoading] = useState<boolean>(false);
-	// const handleContinue = () => { ... };
 
 	return (
 		<PageWrapper
@@ -128,7 +121,7 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 				{
 					// Clases condicionales para el color base del degradado
 					'bg-light': !darkModeStatus, // Degradado claro en light mode
-					'bg-dark': darkModeStatus,   // Degradado oscuro en dark mode
+					'bg-dark': darkModeStatus, // Degradado oscuro en dark mode
 				},
 			)}>
 			{/* <Head>
@@ -139,11 +132,11 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 					<div className='col-xl-4 col-lg-6 col-md-8 shadow-3d-container'>
 						<Card className='shadow-3d-dark' data-tour='login-page'>
 							<CardBody>
-								<div className='text-center my-5'>
+								<div className='text-center my-5  bg-light rounded'>
 									<Link
 										href='/'
 										className={classNames(
-											'text-decoration-none  fw-bold display-2',
+											'text-decoration-none fw-bold display-2',
 											{
 												'text-dark': !darkModeStatus,
 												'text-light': darkModeStatus,
@@ -213,7 +206,7 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 												<FormGroup
 													id='signup-email'
 													isFloating
-													label='Your email'>
+													label='Tu email'>
 													<Input type='email' autoComplete='email' />
 												</FormGroup>
 											</div>
@@ -221,7 +214,7 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 												<FormGroup
 													id='signup-name'
 													isFloating
-													label='Your name'>
+													label='Tu nombre'>
 													<Input autoComplete='given-name' />
 												</FormGroup>
 											</div>
@@ -260,24 +253,27 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 											{/* Campo Usuario/Email */}
 											<div className='col-12'>
 												<FormGroup
-													id='loginUsername'
+													id='loginIdentifier'
 													isFloating
-													label='Your email or username'>
+													label='Tu email o usuario'>
 													{/* Ya no tiene la clase 'd-none' condicional */}
 													<Input
-														name='loginUsername' // Asegurarse de que el name coincide con initialValues
+														name='loginIdentifier' // Asegurarse de que el name coincide con initialValues
 														autoComplete='username'
-														value={formik.values.loginUsername}
-														isTouched={formik.touched.loginUsername}
+														value={formik.values.loginIdentifier}
+														isTouched={formik.touched.loginIdentifier}
 														invalidFeedback={
-															formik.errors.loginUsername
+															formik.errors.loginIdentifier
 														}
-														isValid={formik.touched.loginUsername && !formik.errors.loginUsername}
+														isValid={
+															formik.touched.loginIdentifier &&
+															!formik.errors.loginIdentifier
+														}
 														onChange={formik.handleChange}
 														onBlur={formik.handleBlur}
 														onFocus={() => {
 															// Opcional: Limpiar errores específicos al enfocar
-															// formik.setFieldError('loginUsername', '');
+															// formik.setFieldError('loginIdentifier', '');
 														}}
 													/>
 												</FormGroup>
@@ -289,7 +285,7 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 												<FormGroup
 													id='loginPassword'
 													isFloating
-													label='Password'>
+													label='Contraseña'>
 													{/* Ya no tiene la clase 'd-none' condicional */}
 													<Input
 														name='loginPassword' // Asegurarse de que el name coincide con initialValues
@@ -300,7 +296,10 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 														invalidFeedback={
 															formik.errors.loginPassword
 														}
-														isValid={formik.touched.loginPassword && !formik.errors.loginPassword}
+														isValid={
+															formik.touched.loginPassword &&
+															!formik.errors.loginPassword
+														}
 														onChange={formik.handleChange}
 														onBlur={formik.handleBlur}
 														onFocus={() => {
@@ -320,7 +319,18 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 													type='submit' // Importante para que funcione con form onSubmit
 													isDisable={formik.isSubmitting} // Deshabilitar mientras se envía
 												>
-													{formik.isSubmitting ? 'Logging in...' : 'Login'}
+													{formik.isSubmitting ? (
+														<Spinner
+															tag={'span'} // 'div' || 'span'
+															color={'dark'} // 'primary' || 'secondary' || 'success' || 'info' || 'warning' || 'danger' || 'light' || 'dark'
+															isSmall={true}
+															size={'sm'}
+															// size={Number || String} // Example: 10, '3vh', '5rem' etc.
+															inButton={'onlyIcon'} // true || false || 'onlyIcon'
+														/>
+													) : (
+														'Iniciar sesión'
+													)}
 												</Button>
 											</div>
 										</>
@@ -368,8 +378,10 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 								</form>
 							</CardBody>
 						</Card>
-						<div className='text-center mt-4'> {/* Añadido margen superior para separar del Card */}
-							<Link
+						<div className='text-center mt-4'>
+							{' '}
+							{/* Añadido margen superior para separar del Card */}
+							{/* <Link
 								href='/'
 								className={classNames('text-decoration-none me-3', {
 									// Ajustar el color del enlace según el tema, no según singUpStatus
@@ -377,16 +389,17 @@ const Login: NextPage<ILoginProps> = ({ isSignUp }) => {
 									'link-light': darkModeStatus,
 								})}>
 								Privacy policy
-							</Link>
-							<Link
+							</Link> */}
+							{/* <Link
 								href='/'
-								className={classNames('text-decoration-none', { // Quitado 'link-light' fijo
+								className={classNames('text-decoration-none', {
+									// Quitado 'link-light' fijo
 									// Ajustar el color del enlace según el tema
 									'link-dark': !darkModeStatus,
 									'link-light': darkModeStatus,
 								})}>
 								Terms of use
-							</Link>
+							</Link> */}
 						</div>
 					</div>
 				</div>

@@ -1,38 +1,24 @@
 [
     {
-        "USER_EMAIL": "kevindhuertas@gmail.com",
-        "USER_PASSWORD": "Password",
+        "USER_EMAIL": "visanow@gmail.com",
+        "USER_PASSWORD": "123456789",
+        "process_id": "1234567",
         "allowed_location_to_save_appointment": [
-            "Quito"
-        ],
-        "allowed_months_to_save_appointment": [
-            "abril",
-            "mayo",
-            "junio"
-        ],
-        "stop_month": "julio",
-        "blocked_days": [
-            "2025-03-27",
-            "2025-03-29"
-        ],
-        "status": "inactive",
-        "pid": ""
-    },
-    {
-        "USER_EMAIL": "demo2@yopmail.com",
-        "USER_PASSWORD": "Xdjuazxd0*",
-        "allowed_location_to_save_appointment": [
+            "Quito",
             "Guayaquil"
         ],
         "allowed_months_to_save_appointment": [
-            "abril",
-            "mayo"
+            "junio",
+            "julio",
+            "agosto",
+            "septiembre"
         ],
-        "stop_month": "julio",
+        "stop_month": "octubre",
         "blocked_days": [
-            "2025-03-28"
+            "2025-06-20"
         ],
         "status": "inactive",
-        "pid": ""
+        "pid": "",
+        "user_id": "0001"
     }
 ]

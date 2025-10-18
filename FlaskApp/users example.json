@@ -1,0 +1,15 @@
+[
+  {
+    "id": "1",
+    "username": "visanow",
+    "name": "Visa",
+    "surname": "Now",
+    "position": "Empresa",
+    "email": "info@visanow.com",
+    "src": "wanna1.png",
+    "isOnline": true,
+    "isReply": true,
+    "color": "primary",
+    "password": "@ABC123"
+  }
+]

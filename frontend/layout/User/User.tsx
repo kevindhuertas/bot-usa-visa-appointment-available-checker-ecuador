@@ -13,7 +13,7 @@ import { useRouter } from 'next/router';
 import Popovers from '../../components/bootstrap/Popovers';
 
 const User = () => {
-	const { userData, setUser } = useContext(AuthContext);
+	const { userData, logout } = useContext(AuthContext);
 
 	const router = useRouter();
 
@@ -105,10 +105,10 @@ const User = () => {
 							role='presentation'
 							className='navigation-item cursor-pointer'
 							onClick={() => {
-								if (setUser) {
-									setUser('');
+								if (logout) {
+									logout();
+									router.push(`/${demoPagesMenu.login.path}`);
 								}
-								router.push(`/${demoPagesMenu.login.path}`);
 							}}>
 							<span className='navigation-link navigation-link-pill'>
 								<span className='navigation-link-info'>

@@ -1,5 +1,6 @@
 gmail_credentials.py
 page_credentials.py
+users.json
 # Otros archivos o directorios que quieras ignorar
 *.log
 __pycache__

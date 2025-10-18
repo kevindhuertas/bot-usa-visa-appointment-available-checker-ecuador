@@ -1,9 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Button from '../../components/bootstrap/Button';
 import ProcessForm, { ProcessData } from './ProcessForm';
 import ProcessList from './ProcessList';
+import Card, {
+	CardActions,
+	CardBody,
+	CardHeader,
+	CardLabel,
+	CardTitle,
+} from '../../components/bootstrap/Card';
+import SubHeader, { SubHeaderLeft, SubHeaderRight } from '../../layout/SubHeader/SubHeader';
+import AuthContext from '../../context/authContext';
 
 // A simple console-based replacement for the 'notify' function
 const consoleNotify = (message: string, type: 'success' | 'error' | 'info' | 'warning') => {
@@ -19,12 +28,13 @@ const App: React.FC = () => {
 	const [showForm, setShowForm] = useState<boolean>(false);
 	const [processes, setProcesses] = useState<ProcessData[]>([]);
 	const [editProcess, setEditProcess] = useState<ProcessData | null>(null);
+	const { userData } = useContext(AuthContext);
 
 	const fetchProcesses = async () => {
 		try {
 			const apiUrl = process.env.NEXT_PUBLIC_BOT_PUBLIC_API_URL;
 			console.info('Fetching processes from:', apiUrl + 'processes');
-			const response = await fetch(apiUrl + 'processes');
+			const response = await fetch(apiUrl + 'processes?user_id=' + userData.id + '');
 
 			if (!response.ok) {
 				consoleNotify(`Error fetching processes: ${response.statusText}`, 'error');
@@ -170,41 +180,55 @@ const App: React.FC = () => {
 	};
 
 	return (
-		<div className='container mt-4'>
-			<div className='mb-4 d-flex justify-content-between align-items-center'>
-				<h2 className='h4 mb-0'>Lista de Procesos</h2>
-				<Button
-					color='primary'
-					onClick={() => {
-						setShowForm(!showForm);
-						if (showForm || editProcess) {
-							setEditProcess(null);
-						}
-					}}
-					icon={showForm ? undefined : 'Add'}>
-					{showForm ? 'Cerrar Formulario' : 'Agregar Nueva Búsqueda'}
-				</Button>
-			</div>
+		<>
+			{/* <SubHeader>
+				<SubHeaderLeft></SubHeaderLeft>
+				<SubHeaderRight></SubHeaderRight>
+			</SubHeader> */}
 
-			{showForm && (
-				<ProcessForm
-					initialData={editProcess}
-					onSubmit={handleFormSubmit}
-					onCancel={() => {
-						setShowForm(false);
-						setEditProcess(null);
-					}}
-				/>
-			)}
-			<div className='mt-2'>
-				<ProcessList
-					processes={processes}
-					onEdit={handleEdit}
-					onStop={handleStop}
-					onDelete={handleDelete}
-				/>
+			<div className='container mt-4'>
+				<Card>
+					<CardHeader>
+						<CardLabel iconColor='secondary'>
+							<CardTitle>Lista de Procesos</CardTitle>
+						</CardLabel>
+						<CardActions>
+							<Button
+								color='primary'
+								onClick={() => {
+									setShowForm(!showForm);
+									if (showForm || editProcess) {
+										setEditProcess(null);
+									}
+								}}
+								icon={showForm ? undefined : 'Add'}>
+								{showForm ? 'Cerrar Formulario' : 'Agregar Nueva Búsqueda'}
+							</Button>
+						</CardActions>
+					</CardHeader>
+					<CardBody>
+						{showForm && (
+							<ProcessForm
+								initialData={editProcess}
+								onSubmit={handleFormSubmit}
+								onCancel={() => {
+									setShowForm(false);
+									setEditProcess(null);
+								}}
+							/>
+						)}
+						<div className=' '>
+							<ProcessList
+								processes={processes}
+								onEdit={handleEdit}
+								onStop={handleStop}
+								onDelete={handleDelete}
+							/>
+						</div>
+					</CardBody>
+				</Card>
 			</div>
-		</div>
+		</>
 	);
 };
 

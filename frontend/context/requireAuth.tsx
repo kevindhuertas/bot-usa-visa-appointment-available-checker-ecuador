@@ -5,29 +5,29 @@ import { useAuth } from '../context/authContext'; // <-- Usa el hook personaliza
 // import LoadingSpinner from './LoadingSpinner'; // O cualquier indicador de carga
 
 interface RequireAuthProps {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }
 
 const RequireAuth = ({ children }: RequireAuthProps) => {
-  const { user, loading } = useAuth(); // <-- Obtén user y loading
-  const router = useRouter();
-  const isLoginPage = router.pathname === '/login/sign-in';
+	const { userData, loading } = useAuth(); // <-- Obtén user y loading
+	const router = useRouter();
+	const isLoginPage = router.pathname === '/login/sign-in';
 
-  useEffect(() => {
-    if (!loading && !user && !isLoginPage) {
-      router.push('/login/sign-in');
-    }
-  }, [user, loading, router, isLoginPage]); 
+	useEffect(() => {
+		if (!loading && !userData.id && !isLoginPage) {
+			router.push('/login/sign-in');
+		}
+	}, [userData.id, loading, router, isLoginPage]);
 
-  if (loading) {
-    return null; // O <LoadingSpinner />;
-  }
+	if (loading) {
+		return null; // O <LoadingSpinner />;
+	}
 
-  if (!user && !isLoginPage) {
-    return null;
-  }
+	if (!userData.id && !isLoginPage) {
+		return null;
+	}
 
-  return <>{children}</>;
+	return <>{children}</>;
 };
 
 export default RequireAuth;

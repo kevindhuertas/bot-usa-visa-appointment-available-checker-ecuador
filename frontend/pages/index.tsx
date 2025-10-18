@@ -15,6 +15,7 @@ import useDarkMode from '../hooks/useDarkMode';
 import Page from '../layout/Page/Page';
 import Popovers from '../components/bootstrap/Popovers';
 import App from './dashboard/App';
+import Button from '../components/bootstrap/Button';
 
 const Index: NextPage = () => {
 	const { mobileDesign } = useContext(ThemeContext);
@@ -60,6 +61,22 @@ const Index: NextPage = () => {
 					<code>index.tsx</code>
 				</SubHeaderRight>
 			</SubHeader> */}
+			<SubHeader className='zindex-dropdown'>
+				<SubHeaderLeft>
+					<span className='h4 mb-0 fw-bold'>Procesos</span>
+					<SubheaderSeparator />
+					<div className='text-muted'>
+						<small>
+							Procesos activos: <span className='text-info fw-bold'> 0 / 20</span>
+						</small>
+					</div>
+				</SubHeaderLeft>
+				{/* <SubHeaderRight>
+					<CommonAvatarTeam>
+						<strong>Marketing</strong> Team
+					</CommonAvatarTeam>
+				</SubHeaderRight> */}
+			</SubHeader>
 			<Page>
 				<App />
 			</Page>

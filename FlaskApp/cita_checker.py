@@ -58,7 +58,7 @@ class AppointmentCheck:
         service = Service(driver_path)
         self.driver = webdriver.Chrome(service=service, options=chrome_options)
 
-    #INIT BOT
+
     def check(self):
         try:
             self.driver.get(self.url)
@@ -67,31 +67,48 @@ class AppointmentCheck:
             login_url = "https://ais.usvisa-info.com/es-ec/niv/users/sign_in"
 
             if current_url == login_url:
-                self.print_controller("El navegador ha sido redireccionado a la página de inicio de sesión.")
                 self.login()
+                try:
+                    WebDriverWait(self.driver, self.pageLoadTime).until(
+                        EC.url_changes(login_url)
+                    )
+                except TimeoutException:
+                    self.error_controller("Fallo en el inicio de sesión, revisar credenciales")
+                    return
 
+                current_url_after_login = self.driver.current_url
+                self.print_controller("Se inició sesión exitosamente")
                 location_select_id = "appointments_consulate_appointment_facility_id"
-                WebDriverWait(self.driver, self.pageLoadTime).until(
-                    EC.presence_of_element_located((By.ID, location_select_id)))
+                try:
+                    WebDriverWait(self.driver, self.pageLoadTime).until(
+                        EC.presence_of_element_located((By.ID, location_select_id))
+                    )
+
+                except TimeoutException:
+                    self.error_controller("No se encontró el elemento de ubicación (appointments_consulate_appointment).")
+                    return
+
                 
-                current_url = self.driver.current_url
-                if current_url == self.url:
-                    self.print_controller("Redirección exitosa a la página de citas.")
-                    # self.check_dates()
+                if current_url_after_login == self.url:
+                    self.check_dates()
                 else:
-                    self.error_controller("Hubo fallo al redireccionar después de inicio de sesión.")
+                    self.error_controller("Hubo fallo al redireccionar después de inicio de sesión")
+
             else:
                 self.error_controller("El programa está en la página de citas o en otra página diferente.")
         except Exception as e:
-            self.error_controller(f"Error crítico: {str(e)}")
+            self.error_controller(f"Error durante el proceso de inicio de sesión y redirección a verificación de citas: {e}")
         finally:
-            self.driver.quit() #VERIFICAR FINAL del bot======= 
+            self.driver.quit()
 
     def error_controller(self, e):
         self.logger.error(f"Error: {e}")
 
     def print_controller(self, e):
         self.logger.info(f"{e}")
+
+    def warning_controller(self, e):
+        self.logger.warning(f"{e}")
 
     def login(self):
         try:
@@ -100,9 +117,8 @@ class AppointmentCheck:
                     EC.presence_of_element_located((By.CLASS_NAME, "ui-button"))
                 )
                 ok_button.click()
-                self.print_controller("Botón OK encontrado y clickeado.")
             except:
-                self.print_controller("No se encontró el botón OK.")
+                self.print_controller("No se encontró el botón OK antes de iniciar sesión")
 
             email_input = WebDriverWait(self.driver, self.pageLoadTime).until(
                 EC.presence_of_element_located((By.ID, "user_email"))
@@ -121,7 +137,7 @@ class AppointmentCheck:
 
     def check_dates(self):
         try:
-            self.print_controller("Check_date() running")
+            self.print_controller("Continuando con checkeo en página de citas")
             location_select_id = "appointments_consulate_appointment_facility_id"
             date_input_id = "appointments_consulate_appointment_date"
             first_group_class = "ui-datepicker-group-first"
@@ -158,7 +174,7 @@ class AppointmentCheck:
             self.verify_dates_until_june(date_input_id, first_group_class, next_button_class)
 
         except Exception as e:
-            self.error_controller(f"Error durante la verificación de fechas: {e}")
+            self.error_controller(f"Error durante la verificación de fechas de citas ")
 
     def verify_dates_until_june(self, date_input_id, first_group_class, next_button_class):
         while True:
@@ -182,7 +198,7 @@ class AppointmentCheck:
                 self.driver.execute_script("arguments[0].click();", next_button)
                 time.sleep(2)
             except Exception as e:
-                self.error_controller(f"Error durante la verificación de fechas: {e}")
+                self.error_controller(f"Error durante la verificación diaria de fechas de citas")
                 break
 
     def check_calendar_group(self, group_class):
@@ -224,36 +240,34 @@ class AppointmentCheck:
                                 if self.location.lower() in [l.lower() for l in self.allowed_location_to_save_appointment]:
                                     if not is_blocked:
                                         a_tag[0].click()
-                                        self.auto_select_date(month, day_number)
+                                        # self.auto_select_date(month, day_number)
                                     else:
-                                        self.print_controller(f"Fecha bloqueada detectada, cita encontrada el: {current_date}")
+                                        self.warning_controller(f"Fecha bloqueada detectada, cita encontrada el: {current_date}")
                                 else:
-                                    self.print_controller(f"Fecha bloqueada detectada, cita encontrada el: {current_date} en {self.location} ")
+                                    self.warning_controller(f"Fecha bloqueada detectada, cita encontrada el: {current_date} en {self.location} ")
                             else:
-                                self.print_controller(f"Fecha fuera de locacion permitido, cita encontrada el: {current_date} en {self.location}")
+                                self.warning_controller(f"Fecha fuera de locacion permitida, cita encontrada el: {current_date} en {self.location}")
         except Exception as e:
-            self.error_controller(f"Error durante la verificación del grupo de calendario: {e}")
+            self.error_controller(f"Error durante la verificación del grupo de calendario")
 
     def alert_available_date(self, month, day):
         if (self.alert_sent== False):
             alert_system = EmailAlert()
             alert_system.send_email_alert("CITA DISPONIBLE:", month, day, self.location)
-            self.print_controller(f"EMAIL ALERT : Fecha disponible: {day} de {month} en {self.location}")
+            self.warning_controller(f"ALERTA A EMAIL: Fecha disponible el {day} de {month} en {self.location}")
             self.alert_sent = True
 
     def auto_select_date(self, month, day):
         try:
             time.sleep(4)
-              # Dar click en el select de horarios de citas
             select_element = self.driver.find_element(By.ID, "appointments_consulate_appointment_time")
             select_element.click()
             time.sleep(3)
-            # Obtener todas las opciones disponibles dentro del select
             options = select_element.find_elements(By.TAG_NAME, "option")
             time.sleep(1)
             # Verificar que exista al menos una segunda opción
             if len(options) < 2:
-                print("No hay suficientes opciones disponibles en el select.")
+                self.print_controller("No hay suficientes opciones disponibles en el select para seleccionar una cita.")
                 time.sleep(3)
                 select_element = self.driver.find_element(By.ID, "appointments_consulate_appointment_time")
                 select_element.click()
@@ -277,7 +291,7 @@ class AppointmentCheck:
             alert_button.click()
             time.sleep(10)
             
-            self.print_controller(f"FECHA SELECCIONADA Y ENVIADA {month} el {day} en {self.location}")
+            self.warning_controller(f"FECHA SELECCIONADA Y ENVIADA {month} el {day} en {self.location}")
             alert_system = EmailAlert()
             alert_system.send_email_alert("CITA AUTO PROGRAMADA! ", month, day, self.location)
             time.sleep(45)

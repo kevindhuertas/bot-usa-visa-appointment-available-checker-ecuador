@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Header, { HeaderLeft, HeaderRight } from '../../../layout/Header/Header';
 import Popovers from '../../../components/bootstrap/Popovers';
 import Button, { IButtonProps } from '../../../components/bootstrap/Button';
@@ -14,6 +14,7 @@ import Spinner from '../../../components/bootstrap/Spinner';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import showNotification from '../../../components/extras/showNotification';
+import AuthContext from '../../../context/authContext';
 
 const DashboardHeader = () => {
 	const router = useRouter();
@@ -27,6 +28,7 @@ const DashboardHeader = () => {
 	};
 
 	const { i18n } = useTranslation();
+	const { userData: data } = useContext(AuthContext);
 
 	const changeLanguage = (lng: ILang['key']['lng']) => {
 		i18n.changeLanguage(lng);
@@ -48,7 +50,7 @@ const DashboardHeader = () => {
 					desc={<code>pages/_layout/_headers/DashboardHeader.tsx</code>}>
 					Dashboad
 				</Popovers> */}
-				<span>Administrador de Búsqueda de Citas</span>
+				<span className='h4 mb-0 fw-bold'>Hola {data.name}!</span>
 				{/* <code>DashboardHeader.tsx</code> */}
 			</HeaderLeft>
 			<HeaderRight>
@@ -81,7 +83,7 @@ const DashboardHeader = () => {
 					</div>
 
 					{/* Lang Selector */}
-					<div className='col-auto'>
+					{/* <div className='col-auto'>
 						<Dropdown>
 							<DropdownToggle hasIcon={false}>
 								{typeof getLangWithKey(router.locale as ILang['key']['lng'])
@@ -119,7 +121,7 @@ const DashboardHeader = () => {
 								))}
 							</DropdownMenu>
 						</Dropdown>
-					</div>
+					</div> */}
 				</div>
 			</HeaderRight>
 		</Header>

@@ -138,7 +138,7 @@ notifempty
    Alternatively, set the FLASK_APP variable and use:
    ```bash
    export FLASK_APP=app.py
-   flask run
+   flask run | flask run --port=5001
    ```
    The backend will be available at `http://127.0.0.1:5000`.
 
@@ -167,6 +167,7 @@ notifempty
 
 ## ⚠️ Important Notes
 
+- Chrome Driver download Page: https://googlechromelabs.github.io/chrome-for-testing/
 - 🔒 Never commit `credentials.py` to version control
 - 📧 Test email configuration before deployment
 - ⏰ Verify scheduler is working with initial test runs

@@ -1,9 +1,15 @@
 import UserImage from '../../assets/img/wanna/wanna1.png';
 import UserImage2 from '../../assets/img/wanna/wanna2.png';
-import SERVICES, { IServiceProps } from './serviceDummyData';
-
-import User7Landing from '../../assets/img/wanna/landing1.png';
 import { TColor } from '../../type/color-type';
+
+export interface IPlan {
+	type: string;
+	processProgramationAvalaible: string;
+	processChekingAvalaible: string;
+	planExpiration: string;
+	planRenewed: string;
+	planStarted: string;
+}
 
 export interface IUserProps {
 	id: string;
@@ -17,8 +23,10 @@ export interface IUserProps {
 	isReply?: boolean;
 	color: TColor;
 	fullImage?: string;
-	// services?: IServiceProps[];
 	password: string;
+	checksCount: string; // Podrías cambiar a number si aplica
+	processfinished: string;
+	plan: IPlan;
 }
 
 const john: IUserProps = {

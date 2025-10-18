@@ -24,7 +24,6 @@ class EmailAlert:
             f"Fecha: {day} de {month}\n"
             f"Ubicación: {location}\n\n"
         )
-
         # Enviar email con conexión segura
         try:
             with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:

@@ -42,24 +42,24 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
 			<ThemeContextProvider>
 				<ThemeProvider theme={theme}>
 					<ToastProvider components={{ ToastContainer, Toast }}>
-						<TourProvider
+						{/* <TourProvider
 							steps={steps}
 							styles={styles}
 							showNavigation={false}
-							showBadge={false}>
-							<App>
-								<AsideRoutes />
-								<Wrapper>
-									<RequireAuth>
-										{/* eslint-disable-next-line react/jsx-props-no-spreading */}
-										<Component {...pageProps} />
-									</RequireAuth>
-								</Wrapper>
-							</App>
-							<Portal id='portal-notification'>
-								<ReactNotifications />
-							</Portal>
-						</TourProvider>
+							showBadge={false}> */}
+						<App>
+							<AsideRoutes />
+							<Wrapper>
+								<RequireAuth>
+									{/* eslint-disable-next-line react/jsx-props-no-spreading */}
+									<Component {...pageProps} />
+								</RequireAuth>
+							</Wrapper>
+						</App>
+						<Portal id='portal-notification'>
+							<ReactNotifications />
+						</Portal>
+						{/* </TourProvider> */}
 					</ToastProvider>
 				</ThemeProvider>
 			</ThemeContextProvider>

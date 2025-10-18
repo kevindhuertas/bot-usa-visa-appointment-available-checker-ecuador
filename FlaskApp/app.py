@@ -1,5 +1,6 @@
 import os
 from flask import Flask, request, jsonify
+from controllers.userController import get_user_by_id, login_user
 from utils import get_log_filename, get_paginated_logs
 from process_manager import start_process, stop_process, get_process_status
 from models import add_process, get_process_by_email, update_process, delete_process, list_processes
@@ -11,20 +12,24 @@ CORS(app, origins=["http://localhost:3000"])
 
 @app.route('/processes', methods=['GET'])
 def get_processes():
+    user_id = request.args.get('user_id') # recoger ?user_id=123 del frontend
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
     # return jsonify({"message": "CORS habilitado correctamente"}), 200
     # Devuelve la lista de procesos con su estado actualizado
     processes = list_processes()
+    user_processes = [proc for proc in processes if proc.get('user_id') == user_id]
     # Actualizar el estado de cada proceso, por ejemplo, con psutil o comprobando el PID
-    for proc in processes:
+    for proc in user_processes:
         proc['active'] = get_process_status(proc.get('pid'))
-    return jsonify(processes), 200
+    return jsonify(user_processes), 200
 
 @app.route('/processes', methods=['POST'])
 def create_process():
     data = request.json
     # Validar que se envíen todos los campos requeridos
     required_fields = ["USER_EMAIL", "USER_PASSWORD", "allowed_location_to_save_appointment",
-                       "allowed_months_to_save_appointment", "stop_month"]
+                       "allowed_months_to_save_appointment", "stop_month","user_id"]
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing field {field}"}), 400
@@ -35,7 +40,8 @@ def create_process():
     pid = start_process(data)
     data['pid'] = pid
     data['status'] = 'active'
-    # Guarda la configuración en el JSON
+    data['last_Error'] = ''
+    data['last_check'] = ''
     add_process(data)
     return jsonify(data), 201
 
@@ -107,6 +113,53 @@ def get_logs(email: str):
         "total": total,
         "has_more": has_more
     }), 200
+
+# USER =====================================================
+@app.route('/auth/login', methods=['POST'])
+def login_endpoint():
+    """
+    Endpoint para el inicio de sesión.
+    Espera un JSON con "identifier" (username o email) y "password".
+    """
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No se enviaron datos JSON."}), 400
+    
+    identifier = data.get('identifier')
+    password = data.get('password')
+
+    if not identifier or not password:
+        return jsonify({"error": "Faltan 'identifier' o 'password' en la solicitud."}), 400
+
+    authenticated_user = login_user(identifier, password)
+
+    if authenticated_user:
+        # En una aplicación real, aquí generarías y devolverías un token JWT
+        # Por ahora, solo devolvemos los datos del usuario (sin contraseña)
+        return jsonify({
+            "message": "Login exitoso.",
+            "user": authenticated_user #authenticated_user ya no tiene la contraseña
+        }), 200
+    else:
+        return jsonify({"error": "Credenciales inválidas."}), 401
+
+
+@app.route('/users/<user_id>', methods=['GET'])
+def get_user_endpoint(user_id: str):
+    """
+    Endpoint para recuperar la información de un usuario por su ID.
+    No devuelve la contraseña.
+    """
+    user = get_user_by_id(user_id)
+    
+    if user:
+        user_data_to_return = user.copy()
+        if 'password' in user_data_to_return: # Asegurarse de no enviar la contraseña
+            del user_data_to_return['password']
+        return jsonify(user_data_to_return), 200
+    else:
+        return jsonify({"error": "Usuario no encontrado."}), 404
 
 
 if __name__ == '__main__':

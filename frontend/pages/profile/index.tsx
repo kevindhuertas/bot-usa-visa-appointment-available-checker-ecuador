@@ -42,6 +42,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import Badge from '../../components/bootstrap/Badge';
 import Alert from '../../components/bootstrap/Alert';
 import AuthContext from '../../context/authContext';
+import { text } from 'stream/consumers';
 
 const Id: NextPage = () => {
 	useTourStep(19);
@@ -169,7 +170,7 @@ const Id: NextPage = () => {
 													</div>
 													<div className='flex-grow-1 ms-3'>
 														<div className='fw-bold fs-5 mb-0'>
-															{`${data?.username}@site.com`}
+															{`${data?.email}`}
 														</div>
 														<div className='text-muted'>
 															Email Address
@@ -186,9 +187,9 @@ const Id: NextPage = () => {
 														<div className='fw-bold fs-5 mb-0'>
 															{`@${data?.username}`}
 														</div>
-														<div className='text-muted'>
+														{/* <div className='text-muted'>
 															Social name
-														</div>
+														</div> */}
 													</div>
 												</div>
 											</div>
@@ -197,7 +198,7 @@ const Id: NextPage = () => {
 								</div>
 							</CardBody>
 						</Card>
-						<Card>
+						{/* <Card>
 							<CardHeader>
 								<CardLabel icon='Stream' iconColor='warning'>
 									<CardTitle>Skill</CardTitle>
@@ -236,22 +237,26 @@ const Id: NextPage = () => {
 									</div>
 								)}
 							</CardBody>
-						</Card>
+						</Card> */}
 						<Card>
 							<CardHeader>
 								<CardLabel icon='ShowChart' iconColor='secondary'>
-									<CardTitle>Statics</CardTitle>
+									<CardTitle>Plan</CardTitle>
 								</CardLabel>
 								<CardActions>
-									Only in <strong>{moment().format('MMM')}</strong>.
+									<span className='text-muted fst-italic me-2'>
+										Expiración del plan:
+									</span>
+									<span className='fw-bold'> {data?.plan?.planExpiration}</span>
+									{/* Only in <strong>{moment().format('MMM')}</strong>. */}
 								</CardActions>
 							</CardHeader>
 							<CardBody>
-								<div className='row g-4 align-items-center'>
+								<div className='row g-4 align-items-center '>
 									<div className='col-xl-6'>
 										<div
 											className={classNames(
-												'd-flex align-items-center rounded-2 p-3',
+												'd-flex align-items-center rounded-2 p-3 align-items-stretch ',
 												{
 													'bg-l10-warning': !darkModeStatus,
 													'bg-lo25-warning': darkModeStatus,
@@ -261,29 +266,12 @@ const Id: NextPage = () => {
 												<Icon icon='DoneAll' size='3x' color='warning' />
 											</div>
 											<div className='flex-grow-1 ms-3'>
-												<div className='fw-bold fs-3 mb-0'>15</div>
-												<div className='text-muted mt-n2 truncate-line-1'>
-													Completed tasks
+												<div className='fw-bold fs-3 mb-0'>
+													{data?.checksCount}
 												</div>
-											</div>
-										</div>
-									</div>
-									<div className='col-xl-6'>
-										<div
-											className={classNames(
-												'd-flex align-items-center rounded-2 p-3',
-												{
-													'bg-l10-info': !darkModeStatus,
-													'bg-lo25-info': darkModeStatus,
-												},
-											)}>
-											<div className='flex-shrink-0'>
-												<Icon icon='Savings' size='3x' color='info' />
-											</div>
-											<div className='flex-grow-1 ms-3'>
-												<div className='fw-bold fs-3 mb-0'>1,280</div>
-												<div className='text-muted mt-n2 truncate-line-1'>
-													Earning
+												<div className='text-muted mt-n2 '>
+													Chequeos <br />
+													Totales
 												</div>
 											</div>
 										</div>
@@ -305,9 +293,33 @@ const Id: NextPage = () => {
 												/>
 											</div>
 											<div className='flex-grow-1 ms-3'>
-												<div className='fw-bold fs-3 mb-0'>76</div>
-												<div className='text-muted mt-n2 truncate-line-1'>
-													Occupancy
+												<div className='fw-bold fs-3 mb-0'>
+													{data?.plan?.processProgramationAvalaible}
+												</div>
+												<div className='text-muted mt-n2 '>
+													Max procesos activos
+												</div>
+											</div>
+										</div>
+									</div>
+									<div className='col-xl-6'>
+										<div
+											className={classNames(
+												'd-flex align-items-center rounded-2 p-3 ',
+												{
+													'bg-l10-info': !darkModeStatus,
+													'bg-lo25-info': darkModeStatus,
+												},
+											)}>
+											<div className='flex-shrink-0'>
+												<Icon icon='Savings' size='3x' color='info' />
+											</div>
+											<div className='flex-grow-1 ms-3'>
+												<div className='fw-bold fs-3 mb-0'>
+													{data?.processfinished}
+												</div>
+												<div className='text-muted mt-n2 '>
+													Procesos finalizados
 												</div>
 											</div>
 										</div>
@@ -325,8 +337,12 @@ const Id: NextPage = () => {
 												<Icon icon='Timer' size='3x' color='success' />
 											</div>
 											<div className='flex-grow-1 ms-3'>
-												<div className='fw-bold fs-3 mb-0'>42</div>
-												<div className='text-muted mt-n2'>Hours</div>
+												<div className='fw-bold fs-3 mb-0'>
+													{data?.plan?.processChekingAvalaible}
+												</div>
+												<div className='text-muted mt-n2 '>
+													Procesos Disponibles
+												</div>
 											</div>
 										</div>
 									</div>
@@ -339,27 +355,31 @@ const Id: NextPage = () => {
 							<CardHeader>
 								<CardLabel icon='Summarize' iconColor='success'>
 									<CardTitle tag='h4' className='h5'>
-										Summary
+										<div className='d-flex gap-2'>
+											Estadísticas{'   '}
+											<span className='text-muted fst-italic fw-light ml-4'></span>
+										</div>
 									</CardTitle>
 								</CardLabel>
 								<CardActions>
 									<Dropdown>
 										<DropdownToggle>
 											<Button color='info' icon='Compare' isLight>
-												Compared to{' '}
+												Últimos
 												<strong>
-													{Number(moment().format('YYYY')) - 1}
+													{/* {Number(moment().format('YYYY')) - 1} */}
+													{' 30 días'}
 												</strong>
 												.
 											</Button>
 										</DropdownToggle>
 										<DropdownMenu isAlignmentEnd size='sm'>
 											<DropdownItem>
-												<span>{Number(moment().format('YYYY')) - 2}</span>
+												<span>{' 30 días'}</span>
 											</DropdownItem>
-											<DropdownItem>
+											{/* <DropdownItem>
 												<span>{Number(moment().format('YYYY')) - 3}</span>
-											</DropdownItem>
+											</DropdownItem> */}
 										</DropdownMenu>
 									</Dropdown>
 								</CardActions>
@@ -370,14 +390,14 @@ const Id: NextPage = () => {
 										<Card
 											className={`bg-l${
 												darkModeStatus ? 'o25' : '25'
-											}-primary bg-l${
+											}-warning bg-l${
 												darkModeStatus ? 'o50' : '10'
-											}-primary-hover transition-base rounded-2 mb-4`}
+											}-warning-hover transition-base rounded-2 mb-4`}
 											shadow='sm'>
 											<CardHeader className='bg-transparent'>
 												<CardLabel>
 													<CardTitle tag='h4' className='h5'>
-														Customer Happiness
+														Chequeos
 													</CardTitle>
 												</CardLabel>
 											</CardHeader>
@@ -385,21 +405,19 @@ const Id: NextPage = () => {
 												<div className='d-flex align-items-center pb-3'>
 													<div className='flex-shrink-0'>
 														<Icon
-															icon='EmojiEmotions'
-															size='4x'
-															color='primary'
+															icon='DoneAll'
+															size='3x'
+															color='warning'
 														/>
 													</div>
 													<div className='flex-grow-1 ms-3'>
 														<div className='fw-bold fs-3 mb-0'>
-															100%
-															<span className='text-info fs-5 fw-bold ms-3'>
-																0
-																<Icon icon='TrendingFlat' />
-															</span>
+															<div className='fw-bold fs-3 mb-0'>
+																{data?.checksCount}
+															</div>
 														</div>
 														<div className='text-muted'>
-															Compared to ($5000 last year)
+															Últimos 30 días
 														</div>
 													</div>
 												</div>
@@ -408,14 +426,14 @@ const Id: NextPage = () => {
 										<Card
 											className={`bg-l${
 												darkModeStatus ? 'o25' : '25'
-											}-danger bg-l${
+											}-success bg-l${
 												darkModeStatus ? 'o50' : '10'
-											}-danger-hover transition-base rounded-2 mb-0`}
+											}-success-hover transition-base rounded-2 mb-0`}
 											shadow='sm'>
 											<CardHeader className='bg-transparent'>
 												<CardLabel>
 													<CardTitle tag='h4' className='h5'>
-														Injury
+														Procesos finalizados
 													</CardTitle>
 												</CardLabel>
 											</CardHeader>
@@ -423,22 +441,22 @@ const Id: NextPage = () => {
 												<div className='d-flex align-items-center pb-3'>
 													<div className='flex-shrink-0'>
 														<Icon
-															icon='Healing'
+															icon='Celebration'
 															size='4x'
-															color='danger'
+															color='success'
 														/>
 													</div>
 													<div className='flex-grow-1 ms-3'>
 														<div className='fw-bold fs-3 mb-0'>
-															1
-															<span className='text-danger fs-5 fw-bold ms-3'>
+															{data?.processfinished}
+															{/* <span className='text-danger fs-5 fw-bold ms-3'>
 																-50%
 																<Icon icon='TrendingDown' />
-															</span>
+															</span> */}
 														</div>
-														<div className='text-muted'>
+														{/* <div className='text-muted'>
 															Compared to (2 last week)
-														</div>
+														</div> */}
 													</div>
 												</div>
 											</CardBody>
@@ -447,16 +465,16 @@ const Id: NextPage = () => {
 									<div className='col-md-6'>
 										<Card
 											className={`bg-l${
-												darkModeStatus ? 'o25' : '25'
-											}-success bg-l${
+												darkModeStatus ? 'o25' : '10'
+											}-light bg-l${
 												darkModeStatus ? 'o50' : '10'
-											}-success-hover transition-base rounded-2 mb-0`}
+											}-light-hover transition-base rounded-2 mb-0`}
 											stretch
 											shadow='sm'>
 											<CardHeader className='bg-transparent'>
 												<CardLabel>
 													<CardTitle tag='h4' className='h5'>
-														Daily Occupancy
+														Chequeos por día
 													</CardTitle>
 												</CardLabel>
 											</CardHeader>
@@ -464,8 +482,10 @@ const Id: NextPage = () => {
 												<Chart
 													className='d-flex justify-content-center'
 													series={dayHours.series}
-													options={dayHours.options}
-													type={dayHours.options.chart?.type}
+													options={{
+														...dayHours.options,
+													}}
+													type={'line'}
 													height={dayHours.options.chart?.height}
 													width={dayHours.options.chart?.width}
 												/>
@@ -479,14 +499,14 @@ const Id: NextPage = () => {
 													</div>
 													<div className='flex-grow-1 ms-3'>
 														<div className='fw-bold fs-3 mb-0'>
-															~22H
-															<span className='text-success fs-5 fw-bold ms-3'>
+															~ {data?.checksCount}
+															{/* <span className='text-success fs-5 fw-bold ms-3'>
 																+12.5%
 																<Icon icon='TrendingUp' />
-															</span>
+															</span> */}
 														</div>
 														<div className='text-muted'>
-															Compared to (~19H 30M last week)
+															Última semana
 														</div>
 													</div>
 												</div>
@@ -500,7 +520,7 @@ const Id: NextPage = () => {
 							<CardHeader>
 								<CardLabel icon='Task' iconColor='danger'>
 									<CardTitle>
-										<CardLabel>Assigned</CardLabel>
+										<CardLabel>Últimos procesos finalizados</CardLabel>
 									</CardTitle>
 								</CardLabel>
 							</CardHeader>
@@ -598,7 +618,7 @@ const Id: NextPage = () => {
 								</div>
 								{!userTasks.length && (
 									<Alert color='warning' isLight icon='Report' className='mt-3'>
-										There is no scheduled and assigned task.
+										No se ha completado ningún proceso aún
 									</Alert>
 								)}
 							</CardBody>

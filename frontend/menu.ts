@@ -1,7 +1,7 @@
 export const dashboardPagesMenu = {
 	dashboard: {
-		id: 'dashboard',
-		text: 'Dashboard',
+		id: 'process',
+		text: 'Procesos',
 		path: '/',
 		icon: 'Dashboard',
 		subMenu: null,
@@ -11,6 +11,13 @@ export const dashboardPagesMenu = {
 		text: 'Profile',
 		path: '/profile',
 		icon: 'Person',
+		subMenu: null,
+	},
+	pricingTable: {
+		id: 'pricingTable',
+		text: 'Plans',
+		path: '/plans',
+		icon: 'Local Offer',
 		subMenu: null,
 	},
 };

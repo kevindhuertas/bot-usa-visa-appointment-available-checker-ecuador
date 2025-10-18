@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 from main import get_log_filename
 
@@ -67,7 +68,6 @@ def delete_process(user_email):
         return True
     return False
 
-
 def delete_log_file(email: str) -> bool:
     log_file = get_log_filename(email)
     try:
@@ -80,3 +80,31 @@ def delete_log_file(email: str) -> bool:
         print(f"ERROR eliminando el LOG para {email}: {str(e)}")
         return False
 
+
+def update_process_checks(user_email):
+    processes = load_processes()
+    for idx, proc in enumerate(processes):
+        if proc.get('USER_EMAIL') == user_email:
+            # Incrementar el contador de checks
+            current_count = int(proc.get('check_count', 0))
+            processes[idx]['check_count'] = current_count + 1
+            # Actualizar la última fecha de check
+            processes[idx]['last_check'] = datetime.now().isoformat()
+            save_processes(processes)
+            return processes[idx]
+    return None
+
+def update_process_error(user_email, error_message):
+    processes = load_processes()
+    for idx, proc in enumerate(processes):
+        if proc.get('USER_EMAIL') == user_email:
+            # Manejar el mensaje de error
+            if error_message is None:
+                processes[idx]['last_Error'] = ""
+            else:
+                processes[idx]['last_Error'] = error_message
+                # Cambiar estado a inactive si hay error
+                processes[idx]['status'] = "inactive"
+            save_processes(processes)
+            return processes[idx]
+    return None
