@@ -13,7 +13,8 @@ def start_process(config):
         "--months", ",".join(config["allowed_months_to_save_appointment"]),
         "--blocked_days", ",".join(config["blocked_days"]),
         "--stop_month", config["stop_month"],
-        "--user_id", config["user_id"]
+        "--user_id", config["user_id"],
+        "--appoinment_id", config["appoinment_id"]
     ]
     # Iniciar el proceso en background
     process = subprocess.Popen(args)

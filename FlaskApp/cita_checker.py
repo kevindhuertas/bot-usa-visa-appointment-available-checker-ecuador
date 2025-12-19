@@ -20,9 +20,12 @@ class AppointmentCheck:
                 months: List[str],
                 stop_month: List[str],
                 blocked_days: List[str],
-                logger: logging.Logger
+                logger: logging.Logger,
+                user_id: str,
+                appoinment_id: str,
                 ): #format: ["2025-03-27","2025-03-23"]
-        self.url = "https://ais.usvisa-info.com/es-ec/niv/schedule/52492462/appointment"
+        self.user_id = user_id
+        self.url = f"https://ais.usvisa-info.com/es-ec/niv/schedule/{appoinment_id}/appointment"
         self.alert_sent = False
         self.location = ''
         self.pageLoadTime = 10
@@ -68,9 +71,16 @@ class AppointmentCheck:
 
             if current_url == login_url:
                 self.login()
+                # try:
+                #     WebDriverWait(self.driver, self.pageLoadTime).until(
+                #         EC.url_changes(login_url)
+                #     )
+                # except TimeoutException:
+                #     self.error_controller("Fallo en el inicio de sesión, revisar credenciales")
+                #     return
                 try:
                     WebDriverWait(self.driver, self.pageLoadTime).until(
-                        EC.url_changes(login_url)
+                        EC.presence_of_element_located((By.ID, "appointments_consulate_appointment_facility_id"))
                     )
                 except TimeoutException:
                     self.error_controller("Fallo en el inicio de sesión, revisar credenciales")
@@ -132,6 +142,7 @@ class AppointmentCheck:
 
             submit_button = self.driver.find_element(By.NAME, "commit")
             submit_button.click()
+            self.print_controller("Intentando iniciar sesión haciendo click en ingresar...")
         except Exception as e:
             self.error_controller(f"Error durante el proceso de inicio de sesión: {e}")
 
@@ -154,12 +165,14 @@ class AppointmentCheck:
                     option.click()
                     break
             time.sleep(3)
-            self.verify_dates_until_june(date_input_id, first_group_class, next_button_class)
+            if self.location.lower() in [l.lower() for l in self.allowed_location_to_save_appointment]:
+                self.verify_dates_until_june(date_input_id, first_group_class, next_button_class)
 
             self.alert_sent = False
             self.driver.find_element(By.TAG_NAME, "body").click()
+            time.sleep(0.5)
             self.driver.find_element(By.ID, "header").click()
-
+            time.sleep(0.5)
             self.location = "Guayaquil"
             location_select = WebDriverWait(self.driver, self.pageLoadTime).until(
                 EC.presence_of_element_located((By.ID, location_select_id)))
@@ -171,7 +184,8 @@ class AppointmentCheck:
                     option.click()
                     break
             time.sleep(3)
-            self.verify_dates_until_june(date_input_id, first_group_class, next_button_class)
+            if self.location.lower() in [l.lower() for l in self.allowed_location_to_save_appointment]:
+                self.verify_dates_until_june(date_input_id, first_group_class, next_button_class)
 
         except Exception as e:
             self.error_controller(f"Error durante la verificación de fechas de citas ")
@@ -206,12 +220,10 @@ class AppointmentCheck:
             calendar_group = self.driver.find_element(By.CLASS_NAME, group_class)
             month_element = calendar_group.find_element(By.CLASS_NAME, "ui-datepicker-month")
             month = month_element.text.strip().lower()
-            # print(f"Verificando el mes: {month}")
-            # Obtener los días del mes
             tbody = calendar_group.find_element(By.TAG_NAME, "tbody")
             rows = tbody.find_elements(By.TAG_NAME, "tr")
             month_map = {
-                'january': '01', 'febrero': '02', 'february': '02',
+                'enero': '01','january': '01', 'febrero': '02', 'february': '02',
                 'marzo': '03', 'march': '03', 'abril': '04', 'april': '04',
                 'mayo': '05', 'may': '05', 'junio': '06', 'june': '06',
                 'julio': '07', 'july': '07', 'agosto': '08', 'august': '08',
@@ -230,23 +242,28 @@ class AppointmentCheck:
                             current_month = month_map.get(month, '00')
                             # Crear patrón MM-DD para comparación
                             current_date = f"{current_month}-{day_number}"
+                            allowed_month_numbers = [month_map[m.lower()] for m in self.allowed_months_to_save_appointment if m.lower() in month_map]
+                            
                             is_blocked = any(
                                 blocked_date.endswith(current_date)
                                 for blocked_date in self.blocked_days
                             )
-                            self.alert_available_date(month, day_number)
+
+                            self.print_controller(f"Fecha disponible detectada: {month} {day_number} en {self.location} {'(BLOQUEADA)' if is_blocked else ''}")
                             
-                            if month.lower() in [m.lower() for m in self.allowed_months_to_save_appointment]:
+                            if current_month in allowed_month_numbers:
                                 if self.location.lower() in [l.lower() for l in self.allowed_location_to_save_appointment]:
                                     if not is_blocked:
+                                        self.alert_available_date(month, day_number)
                                         a_tag[0].click()
-                                        # self.auto_select_date(month, day_number)
+                                        self.warning_controller(f"AUTOPROGRAMACION en {self.location} el: {current_date}")
+                                        self.auto_select_date(month, day_number)
                                     else:
                                         self.warning_controller(f"Fecha bloqueada detectada, cita encontrada el: {current_date}")
                                 else:
-                                    self.warning_controller(f"Fecha bloqueada detectada, cita encontrada el: {current_date} en {self.location} ")
+                                    self.warning_controller(f"Fecha fuera de locacion permitida, cita encontrada el: {current_date} en {self.location} ")
                             else:
-                                self.warning_controller(f"Fecha fuera de locacion permitida, cita encontrada el: {current_date} en {self.location}")
+                                self.warning_controller(f"Fecha fuera de mes permitido, cita encontrada el: {current_date} en {self.location}")
         except Exception as e:
             self.error_controller(f"Error durante la verificación del grupo de calendario")
 
@@ -258,6 +275,10 @@ class AppointmentCheck:
             self.alert_sent = True
 
     def auto_select_date(self, month, day):
+        # self.print_controller("MODO PRUEBA auto_select_date la fecha {month} {day} en {self.location} ");
+        # sys.exit();
+        # return
+    
         try:
             time.sleep(4)
             select_element = self.driver.find_element(By.ID, "appointments_consulate_appointment_time")

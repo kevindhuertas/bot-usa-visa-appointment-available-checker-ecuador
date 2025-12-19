@@ -15,7 +15,7 @@ export interface ProcessData {
 	user_id: string;
 	USER_EMAIL: string;
 	USER_PASSWORD: string;
-	process_id: string;
+	appoinment_id: string;
 	allowed_location_to_save_appointment: string[];
 	allowed_months_to_save_appointment: string[];
 	stop_month: string;
@@ -54,7 +54,7 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 	const [formData, setFormData] = useState<ProcessData>({
 		USER_EMAIL: initialData?.USER_EMAIL || '',
 		USER_PASSWORD: initialData?.USER_PASSWORD || '',
-		process_id: initialData?.process_id || '',
+		appoinment_id: initialData?.appoinment_id || '',
 		allowed_location_to_save_appointment:
 			initialData?.allowed_location_to_save_appointment || [],
 		allowed_months_to_save_appointment: initialData?.allowed_months_to_save_appointment || [],
@@ -69,7 +69,7 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 			setFormData({
 				USER_EMAIL: initialData.USER_EMAIL,
 				USER_PASSWORD: initialData.USER_PASSWORD,
-				process_id: initialData.process_id,
+				appoinment_id: initialData.appoinment_id,
 				allowed_location_to_save_appointment:
 					initialData.allowed_location_to_save_appointment,
 				allowed_months_to_save_appointment: initialData.allowed_months_to_save_appointment,
@@ -83,7 +83,7 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 			setFormData({
 				USER_EMAIL: '',
 				USER_PASSWORD: '',
-				process_id: '',
+				appoinment_id: '',
 				allowed_location_to_save_appointment: [],
 				allowed_months_to_save_appointment: [],
 				stop_month: '',
@@ -95,8 +95,8 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 	}, [initialData, userId]);
 
 	useEffect(() => {
-		if (!formData.stop_month && dynamicAllowedMonths.length === 5) {
-			setFormData((prev) => ({ ...prev, stop_month: dynamicAllowedMonths[4] }));
+		if (!formData.stop_month && dynamicAllowedMonths.length === 4) {
+			setFormData((prev) => ({ ...prev, stop_month: dynamicAllowedMonths[3] }));
 		}
 	}, [dynamicAllowedMonths, formData.stop_month]); // Dependencia actualizada
 
@@ -203,7 +203,9 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 			</FormGroup>
 
 			<div className='mb-3'>
-				<label htmlFor='process-id' className='form-label d-flex align-items-center gap-2'>
+				<label
+					htmlFor='appoinment_id'
+					className='form-label d-flex align-items-center gap-2'>
 					Id del proceso
 					<Popovers
 						trigger='hover'
@@ -216,12 +218,12 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 					</Popovers>
 				</label>
 
-				<FormGroup id='process-id'>
+				<FormGroup id='appoinment_id'>
 					<Input
-						id='process-id'
-						name='process_id'
+						id='appoinment_id'
+						name='appoinment_id'
 						type='text'
-						value={formData.process_id}
+						value={formData.appoinment_id}
 						onChange={handleChange}
 						required
 						placeholder='Ingresa el ID del proceso'
@@ -229,9 +231,9 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 				</FormGroup>
 			</div>
 
-			{/* <FormGroup className='mb-3' label='Id del proceso' id='process-id'>
+			{/* <FormGroup className='mb-3' label='Id del proceso' id='appoinment_id'>
 				<Input
-					id='process-id'
+					id='appoinment_id'
 					name='PROCESS_ID'
 					type='text'
 					value={formData.USER_PASSWORD}

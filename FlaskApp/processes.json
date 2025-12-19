@@ -1,24 +1,63 @@
 [
-    {
-        "USER_EMAIL": "visanow@gmail.com",
-        "USER_PASSWORD": "123456789",
-        "process_id": "1234567",
-        "allowed_location_to_save_appointment": [
-            "Quito",
-            "Guayaquil"
-        ],
-        "allowed_months_to_save_appointment": [
-            "junio",
-            "julio",
-            "agosto",
-            "septiembre"
-        ],
-        "stop_month": "octubre",
-        "blocked_days": [
-            "2025-06-20"
-        ],
-        "status": "inactive",
-        "pid": "",
-        "user_id": "0001"
-    }
+  {
+    "USER_EMAIL": "visanow@gmail.com",
+    "USER_PASSWORD": "123456789",
+    "process_id": "1234567",
+    "allowed_location_to_save_appointment": ["Quito", "Guayaquil"],
+    "allowed_months_to_save_appointment": [
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre"
+    ],
+    "stop_month": "octubre",
+    "blocked_days": ["2025-06-20"],
+    "status": "inactive",
+    "pid": "",
+    "user_id": "0001"
+  },
+  {
+    "USER_EMAIL": "victorSalva01@gmail.co",
+    "USER_PASSWORD": "Mauricioborja12345678",
+    "appoinment_id": "71452163",
+    "allowed_location_to_save_appointment": ["Quito"],
+    "allowed_months_to_save_appointment": ["octubre", "noviembre"],
+    "stop_month": "enero",
+    "blocked_days": [
+      "2025-10-27",
+      "2025-11-05",
+      "2025-11-06",
+      "2025-11-07",
+      "2025-11-08",
+      "2025-11-09",
+      "2026-01-21",
+      "2026-01-22"
+    ],
+    "status": "inactive",
+    "pid": "",
+    "user_id": "0001",
+    "process_finished": true
+  },
+  {
+    "USER_EMAIL": "kevindhuertas@gmail.co",
+    "USER_PASSWORD": "Pruebade",
+    "appoinment_id": "9876545",
+    "allowed_location_to_save_appointment": ["Guayaquil"],
+    "allowed_months_to_save_appointment": ["octubre", "noviembre"],
+    "stop_month": "enero",
+    "blocked_days": [
+      "2025-10-27",
+      "2025-11-05",
+      "2025-11-06",
+      "2025-11-07",
+      "2025-11-08",
+      "2025-11-09",
+      "2026-01-21",
+      "2026-01-22"
+    ],
+    "status": "inactive",
+    "pid": "",
+    "user_id": "0001",
+    "process_finished": false
+  }
 ]

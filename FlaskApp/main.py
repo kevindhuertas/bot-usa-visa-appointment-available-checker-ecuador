@@ -7,11 +7,11 @@ from cita_checker import AppointmentCheck
 from utils import get_log_filename, get_stop_month
 
 # Configurar logging
-def main(email, password, locations, months, stop_month,blocked_days,user_id):
+def main(email, password, locations, months, stop_month,blocked_days,user_id, appoinment_id):
     logger = setup_logger(email)
-    logger.info(f"Iniciando verificación de citas para {email} en {locations} para los meses {months}")
+    logger.info(f"Iniciando verificación de citas para {email} en {locations} para los meses {months} para la cita_id de {appoinment_id}")
     try:
-        checker = AppointmentCheck(email, password, locations, months, stop_month,blocked_days,logger)
+        checker = AppointmentCheck(email, password, locations, months, stop_month,blocked_days,logger,user_id, appoinment_id)
         checker.check()
         logger.info(f"Check completado exitosamente para {email}")
     except Exception as e:
@@ -45,6 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("--stop_month", required=True, help="Mes de detención")
     parser.add_argument("--blocked_days", required=True, help="Dias bloqueados")
     parser.add_argument("--user_id", required=True, help="User id del usuario")
+    parser.add_argument("--appoinment_id", required=True, help="Appointment id del usuario")
 
     args = parser.parse_args()
 
@@ -57,6 +58,7 @@ if __name__ == "__main__":
             stop_month=get_stop_month(args.stop_month),
             blocked_days=args.blocked_days.split(","),
             user_id=args.user_id,
+            appoinment_id=args.appoinment_id,
         )
 
-        time.sleep(60)  # Esperar 400 segundos antes del siguiente ciclo
+        time.sleep(45)  # Esperar 400 segundos antes del siguiente ciclo
