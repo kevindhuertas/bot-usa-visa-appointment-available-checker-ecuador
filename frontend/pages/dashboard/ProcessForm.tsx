@@ -194,7 +194,7 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 				<Input
 					id='user-password'
 					name='USER_PASSWORD'
-					type='password'
+					// type='password'
 					value={formData.USER_PASSWORD}
 					onChange={handleChange}
 					required

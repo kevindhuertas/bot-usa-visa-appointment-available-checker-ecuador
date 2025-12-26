@@ -33,9 +33,9 @@ const App: React.FC = () => {
 	const fetchProcesses = async () => {
 		try {
 			const apiUrl = process.env.NEXT_PUBLIC_BOT_PUBLIC_API_URL;
-			console.info('Fetching processes from:', apiUrl + 'processes');
+			// console.info('Fetching processes from:', apiUrl + 'processes');
 			const response = await fetch(apiUrl + 'processes?user_id=' + userData.id + '');
-
+			console.log(userData);
 			if (!response.ok) {
 				consoleNotify(`Error fetching processes: ${response.statusText}`, 'error');
 				setProcesses([]);
@@ -185,6 +185,27 @@ const App: React.FC = () => {
 				<SubHeaderLeft></SubHeaderLeft>
 				<SubHeaderRight></SubHeaderRight>
 			</SubHeader> */}
+			<SubHeader className='zindex-dropdown'>
+				<SubHeaderLeft>
+					<span className='h4 mb-0 fw-bold'>Procesos</span>
+					{/* <SubheaderSeparator /> */}
+					<div className='text-muted'>
+						<small>
+							Procesos activos:{' '}
+							<span className='text-info fw-bold'>
+								{' '}
+								{userData.plan?.processProgramationActive} /{' '}
+								{userData.plan?.processProgramationAvalaible}
+							</span>
+						</small>
+					</div>
+				</SubHeaderLeft>
+				{/* <SubHeaderRight>
+					<CommonAvatarTeam>
+						<strong>Marketing</strong> Team
+					</CommonAvatarTeam>
+				</SubHeaderRight> */}
+			</SubHeader>
 
 			<div className='container mt-4'>
 				<Card>

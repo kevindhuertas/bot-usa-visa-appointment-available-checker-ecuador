@@ -71,39 +71,81 @@ class AppointmentCheck:
 
             if current_url == login_url:
                 self.login()
-                # try:
-                #     WebDriverWait(self.driver, self.pageLoadTime).until(
-                #         EC.url_changes(login_url)
-                #     )
-                # except TimeoutException:
-                #     self.error_controller("Fallo en el inicio de sesión, revisar credenciales")
-                #     return
+                location_select_id = "appointments_consulate_appointment_facility_id"
+                checkbox_id = "confirmed_limit_message"
+                # Esperamos a que ocurra ALGO relevante: cambio de URL, aparición del id de reprogramación o del checkbox de límite
                 try:
                     WebDriverWait(self.driver, self.pageLoadTime).until(
-                        EC.presence_of_element_located((By.ID, "appointments_consulate_appointment_facility_id"))
+                        lambda d: (
+                            d.current_url != login_url or
+                            d.find_elements(By.ID, location_select_id) or
+                            d.find_elements(By.ID, checkbox_id)
+                        )
                     )
                 except TimeoutException:
+                    self.error_controller("No se pudo determinar el estado después del inicio de sesión")
+                    return
+                current_url_after_login = self.driver.current_url
+                self.print_controller(f"Estado después del login: {current_url_after_login}")
+                if current_url_after_login == login_url:
                     self.error_controller("Fallo en el inicio de sesión, revisar credenciales")
                     return
+                
+                # 1) Si está el checkbox confirmed_limit_message -> marcar y continuar
+                if self.driver.find_elements(By.ID, checkbox_id):
+                    self.print_controller("Detectado checkbox 'confirmed_limit_message' (Scheduling Limit). Intentando aceptar...")
 
-                current_url_after_login = self.driver.current_url
+                    try:
+                        # Click en checkbox
+                        checkbox = self.driver.find_element(By.ID, checkbox_id)
+                        self.driver.execute_script("arguments[0].click();", checkbox)
+                        # Marcar checkbox SOLO si no está marcado
+                        if not checkbox.is_selected():
+                            self.driver.execute_script("arguments[0].click();", checkbox)
+
+                        time.sleep(5)
+                        # Click en submit (input type="submit" name="commit")
+                        submit_btn = self.driver.find_element(By.XPATH, "//input[@type='submit' and @name='commit']")
+                        self.driver.execute_script("arguments[0].click();", submit_btn)
+
+                        # Esperar que cargue la página de reprogramación (id esperado)
+                        WebDriverWait(self.driver, self.pageLoadTime).until(
+                            EC.presence_of_element_located((By.ID, location_select_id))
+                        )
+
+                        # actualizar URL y continuar
+                        current_url_after_login = self.driver.current_url
+                        self.print_controller("Aceptado Scheduling Limit page")
+                    except TimeoutException:
+                        self.error_controller("No se pudo continuar desde Scheduling Limit (falló al marcar/submit).")
+                        return
+                # 3) Si existe directamente el id de reprogramación -> flujo normal
+                elif self.driver.find_elements(By.ID, location_select_id):
+                    self.print_controller("Página de reprogramación detectada correctamente")
+
+                # 4) Cualquier otro caso -> error: no se encontró la página de reprogramación
+                else:
+                    self.error_controller("No se encontró la página de reprogramación")
+                    return
+                
+                
+                # ----- Continuación original del flujo: si se redireccionó correctamente, seguir con check_dates -----
                 self.print_controller("Se inició sesión exitosamente")
                 location_select_id = "appointments_consulate_appointment_facility_id"
                 try:
                     WebDriverWait(self.driver, self.pageLoadTime).until(
                         EC.presence_of_element_located((By.ID, location_select_id))
                     )
-
                 except TimeoutException:
-                    self.error_controller("No se encontró el elemento de ubicación (appointments_consulate_appointment).")
+                    self.error_controller("No se encontró la pagina de reprogramacion")
                     return
 
-                
-                if current_url_after_login == self.url:
+                current_url_after_login = self.driver.current_url
+                self.print_controller("Url acu"+current_url_after_login)
+                if self.url in current_url_after_login:
                     self.check_dates()
                 else:
-                    self.error_controller("Hubo fallo al redireccionar después de inicio de sesión")
-
+                    self.error_controller("Hubo fallo al encontrar pagina de reprogramacion después de login")
             else:
                 self.error_controller("El programa está en la página de citas o en otra página diferente.")
         except Exception as e:
@@ -154,44 +196,63 @@ class AppointmentCheck:
             first_group_class = "ui-datepicker-group-first"
             next_button_class = "ui-datepicker-next"
 
+            # ----------- Q U I T O -----------
             self.location = "Quito"
-            location_select = WebDriverWait(self.driver, self.pageLoadTime).until(
-                EC.presence_of_element_located((By.ID, location_select_id)))
-            location_select.click()
-            time.sleep(1)
-            options = location_select.find_elements(By.TAG_NAME, "option")
-            for option in options:
-                if option.text == self.location:
-                    option.click()
-                    break
-            time.sleep(3)
-            if self.location.lower() in [l.lower() for l in self.allowed_location_to_save_appointment]:
-                self.verify_dates_until_june(date_input_id, first_group_class, next_button_class)
+            allowed_locations_normalized = [l.strip().lower() for l in self.allowed_location_to_save_appointment]
 
-            self.alert_sent = False
-            self.driver.find_element(By.TAG_NAME, "body").click()
-            time.sleep(0.5)
-            self.driver.find_element(By.ID, "header").click()
-            time.sleep(0.5)
+            if self.location.strip().lower() in allowed_locations_normalized:
+                location_select = WebDriverWait(self.driver, self.pageLoadTime).until(
+                    EC.presence_of_element_located((By.ID, location_select_id))
+                )
+                location_select.click()
+                time.sleep(1)
+
+                options = location_select.find_elements(By.TAG_NAME, "option")
+                for option in options:
+                    if option.text.strip().lower() == self.location.strip().lower():
+                        option.click()
+                        break
+
+                time.sleep(3)
+                self.verify_dates_until_june(date_input_id,first_group_class,next_button_class)
+
+                self.alert_sent = False
+                self.driver.find_element(By.TAG_NAME, "body").click()
+                time.sleep(0.5)
+                self.driver.find_element(By.ID, "header").click()
+                time.sleep(0.5)
+            else:
+                self.print_controller("Quito no está en allowed_location_to_save_appointment, se omite.")
+
+
+            # ----------- G U A Y A Q U I L -----------
             self.location = "Guayaquil"
-            location_select = WebDriverWait(self.driver, self.pageLoadTime).until(
-                EC.presence_of_element_located((By.ID, location_select_id)))
-            location_select.click()
-            time.sleep(1)
-            options = location_select.find_elements(By.TAG_NAME, "option")
-            for option in options:
-                if option.text == self.location:
-                    option.click()
-                    break
-            time.sleep(3)
-            if self.location.lower() in [l.lower() for l in self.allowed_location_to_save_appointment]:
-                self.verify_dates_until_june(date_input_id, first_group_class, next_button_class)
+            if self.location.strip().lower() in allowed_locations_normalized:
+                location_select = WebDriverWait(self.driver, self.pageLoadTime).until(
+                    EC.presence_of_element_located((By.ID, location_select_id))
+                )
+                location_select.click()
+                time.sleep(1)
+
+                options = location_select.find_elements(By.TAG_NAME, "option")
+                for option in options:
+                    if option.text.strip().lower() == self.location.strip().lower():
+                        option.click()
+                        break
+                time.sleep(3)
+                if self.location.lower() in [l.lower() for l in self.allowed_location_to_save_appointment]:
+                    self.verify_dates_until_june(date_input_id, first_group_class, next_button_class)
+
+            else:
+                self.print_controller("Guayaquil no está en allowed_location_to_save_appointment, se omite.")
 
         except Exception as e:
             self.error_controller(f"Error durante la verificación de fechas de citas ")
 
     def verify_dates_until_june(self, date_input_id, first_group_class, next_button_class):
-        while True:
+        month_count = 0
+        max_months = 3
+        while month_count < max_months:
             try:
                 date_input = WebDriverWait(self.driver, 10).until(
                     EC.element_to_be_clickable((By.ID, date_input_id)))
@@ -210,6 +271,7 @@ class AppointmentCheck:
                 next_button = WebDriverWait(self.driver, 10).until(
                     EC.element_to_be_clickable((By.CLASS_NAME, next_button_class)))
                 self.driver.execute_script("arguments[0].click();", next_button)
+                month_count += 1
                 time.sleep(2)
             except Exception as e:
                 self.error_controller(f"Error durante la verificación diaria de fechas de citas")

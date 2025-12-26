@@ -61,4 +61,4 @@ if __name__ == "__main__":
             appoinment_id=args.appoinment_id,
         )
 
-        time.sleep(45)  # Esperar 400 segundos antes del siguiente ciclo
+        time.sleep(38)  # Esperar 400 segundos antes del siguiente ciclo

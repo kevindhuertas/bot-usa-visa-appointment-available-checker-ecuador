@@ -27,8 +27,8 @@ export interface IUserProps {
 	processFinishedHistory: string[];
 	plan: {
 		type: string;
+		processProgramationActive: string;
 		processProgramationAvalaible: string;
-		processChekingAvalaible: string;
 		planExpiration: string;
 		planRenewed: string;
 		planStarted: string;
