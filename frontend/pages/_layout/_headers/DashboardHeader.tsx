@@ -66,6 +66,17 @@ const DashboardHeader = () => {
 
 					{/* Dark Mode */}
 					<div className='col-auto'>
+						<Button
+							// eslint-disable-next-line react/jsx-props-no-spreading
+							{...styledBtn}
+							data-tour='dark-mode'>
+							{data.country}
+							{/* <Icon
+									icon={darkModeStatus ? 'DarkMode' : 'LightMode'}
+									color={darkModeStatus ? 'info' : 'warning'}
+									className='btn-icon'
+								/> */}
+						</Button>
 						<Popovers trigger='hover' desc='Dark / Light mode'>
 							<Button
 								// eslint-disable-next-line react/jsx-props-no-spreading

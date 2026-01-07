@@ -33,6 +33,7 @@ export interface IUserProps {
 		planRenewed: string;
 		planStarted: string;
 	};
+	country: string;
 	// Asegúrate de que no incluya 'password'
 }
 

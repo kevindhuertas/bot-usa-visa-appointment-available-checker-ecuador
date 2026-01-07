@@ -147,7 +147,7 @@ class AppointmentCheck:
                 else:
                     self.error_controller("Hubo fallo al encontrar pagina de reprogramacion después de login")
             else:
-                self.error_controller("El programa está en la página de citas o en otra página diferente.")
+                self.error_controller("El programa no respende a la pagina de citas. Url actual: "+current_url)
         except Exception as e:
             self.error_controller(f"Error durante el proceso de inicio de sesión y redirección a verificación de citas: {e}")
         finally:

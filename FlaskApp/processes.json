@@ -1,63 +1,158 @@
 [
-  {
-    "USER_EMAIL": "visanow@gmail.com",
-    "USER_PASSWORD": "123456789",
-    "process_id": "1234567",
-    "allowed_location_to_save_appointment": ["Quito", "Guayaquil"],
-    "allowed_months_to_save_appointment": [
-      "junio",
-      "julio",
-      "agosto",
-      "septiembre"
-    ],
-    "stop_month": "octubre",
-    "blocked_days": ["2025-06-20"],
-    "status": "inactive",
-    "pid": "",
-    "user_id": "0001"
-  },
-  {
-    "USER_EMAIL": "victorSalva01@gmail.co",
-    "USER_PASSWORD": "Mauricioborja12345678",
-    "appoinment_id": "71452163",
-    "allowed_location_to_save_appointment": ["Quito"],
-    "allowed_months_to_save_appointment": ["octubre", "noviembre"],
-    "stop_month": "enero",
-    "blocked_days": [
-      "2025-10-27",
-      "2025-11-05",
-      "2025-11-06",
-      "2025-11-07",
-      "2025-11-08",
-      "2025-11-09",
-      "2026-01-21",
-      "2026-01-22"
-    ],
-    "status": "inactive",
-    "pid": "",
-    "user_id": "0001",
-    "process_finished": true
-  },
-  {
-    "USER_EMAIL": "kevindhuertas@gmail.co",
-    "USER_PASSWORD": "Pruebade",
-    "appoinment_id": "9876545",
-    "allowed_location_to_save_appointment": ["Guayaquil"],
-    "allowed_months_to_save_appointment": ["octubre", "noviembre"],
-    "stop_month": "enero",
-    "blocked_days": [
-      "2025-10-27",
-      "2025-11-05",
-      "2025-11-06",
-      "2025-11-07",
-      "2025-11-08",
-      "2025-11-09",
-      "2026-01-21",
-      "2026-01-22"
-    ],
-    "status": "inactive",
-    "pid": "",
-    "user_id": "0001",
-    "process_finished": false
-  }
+    {
+        "USER_EMAIL": "visanow@gmail.com",
+        "USER_PASSWORD": "123456789",
+        "process_id": "1234567",
+        "allowed_location_to_save_appointment": [
+            "Quito",
+            "Guayaquil"
+        ],
+        "allowed_months_to_save_appointment": [
+            "junio",
+            "julio",
+            "agosto",
+            "septiembre"
+        ],
+        "stop_month": "octubre",
+        "blocked_days": [
+            "2025-06-20"
+        ],
+        "status": "inactive",
+        "pid": "",
+        "user_id": "0001"
+    },
+    {
+        "USER_EMAIL": "victorSalva01@gmail.co",
+        "USER_PASSWORD": "Mauricioborja12345678",
+        "appoinment_id": "71452163",
+        "allowed_location_to_save_appointment": [
+            "Quito"
+        ],
+        "allowed_months_to_save_appointment": [
+            "octubre",
+            "noviembre"
+        ],
+        "stop_month": "enero",
+        "blocked_days": [
+            "2025-10-27",
+            "2025-11-05",
+            "2025-11-06",
+            "2025-11-07",
+            "2025-11-08",
+            "2025-11-09",
+            "2026-01-21",
+            "2026-01-22"
+        ],
+        "status": "inactive",
+        "pid": "",
+        "user_id": "0001",
+        "process_finished": true,
+        "process_create_date": "2025-10-10",
+        "process_new_appointment_date": "2025-10-16"
+    },
+    {
+        "USER_EMAIL": "kevindhuertas@gmail.co",
+        "USER_PASSWORD": "Pruebade",
+        "appoinment_id": "9876545",
+        "allowed_location_to_save_appointment": [
+            "Guayaquil"
+        ],
+        "allowed_months_to_save_appointment": [
+            "octubre",
+            "noviembre"
+        ],
+        "stop_month": "enero",
+        "blocked_days": [
+            "2025-10-27",
+            "2025-11-05",
+            "2025-11-06",
+            "2025-11-07",
+            "2025-11-08",
+            "2025-11-09",
+            "2026-01-21",
+            "2026-01-22"
+        ],
+        "status": "inactive",
+        "pid": "",
+        "user_id": "0001",
+        "process_finished": false
+    },
+    {
+        "USER_EMAIL": "lausalazarh03@gmail.com",
+        "USER_PASSWORD": "Lausalazarh03@gmail.com",
+        "appoinment_id": "72105791",
+        "allowed_location_to_save_appointment": [
+            "Quito"
+        ],
+        "allowed_months_to_save_appointment": [
+            "diciembre",
+            "enero"
+        ],
+        "stop_month": "",
+        "blocked_days": [
+            "2026-01-06",
+            "2026-01-07",
+            "2026-01-08",
+            "2026-01-09",
+            "2026-01-10",
+            "2026-01-12",
+            "2026-01-13",
+            "2026-01-14",
+            "2026-01-15",
+            "2026-01-16",
+            "2026-01-17",
+            "2026-01-19",
+            "2026-01-20",
+            "2026-01-21",
+            "2026-01-22",
+            "2026-01-23",
+            "2026-01-24",
+            "2026-01-26",
+            "2026-01-27",
+            "2026-01-28",
+            "2026-01-29",
+            "2026-01-30",
+            "2026-01-31"
+        ],
+        "status": "inactive",
+        "pid": "",
+        "user_id": "0001"
+    },
+    {
+        "USER_EMAIL": "rodolfojama@hotmail.com",
+        "USER_PASSWORD": "rodolfojama@hotmail.com",
+        "appoinment_id": "68838124",
+        "allowed_location_to_save_appointment": [
+            "Quito"
+        ],
+        "allowed_months_to_save_appointment": [
+            "enero"
+        ],
+        "stop_month": "",
+        "blocked_days": [
+            "2026-01-12",
+            "2026-01-13",
+            "2026-01-14",
+            "2026-01-15",
+            "2026-01-16",
+            "2026-01-17",
+            "2026-01-18",
+            "2026-01-19",
+            "2026-01-20",
+            "2026-01-21",
+            "2026-01-22",
+            "2026-01-23",
+            "2026-01-24",
+            "2026-01-25",
+            "2026-01-26",
+            "2026-01-27",
+            "2026-01-28",
+            "2026-01-29",
+            "2026-01-30",
+            "2026-01-31"
+        ],
+        "status": "inactive",
+        "pid": "",
+        "user_id": "0001"
+    }
 ]

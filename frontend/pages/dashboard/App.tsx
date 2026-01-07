@@ -13,13 +13,14 @@ import Card, {
 } from '../../components/bootstrap/Card';
 import SubHeader, { SubHeaderLeft, SubHeaderRight } from '../../layout/SubHeader/SubHeader';
 import AuthContext from '../../context/authContext';
+import showNotification from '../../components/extras/showNotification';
 
 // A simple console-based replacement for the 'notify' function
 const consoleNotify = (message: string, type: 'success' | 'error' | 'info' | 'warning') => {
 	if (type === 'error') {
-		console.error(`Notify (${type}): ${message}`);
+		showNotification(type, ` ${message}`, type);
 	} else {
-		console.log(`Notify (${type}): ${message}`);
+		showNotification(type, ` ${message}`, type);
 	}
 	// In a real app, you would integrate a toast library here
 };
@@ -27,6 +28,7 @@ const consoleNotify = (message: string, type: 'success' | 'error' | 'info' | 'wa
 const App: React.FC = () => {
 	const [showForm, setShowForm] = useState<boolean>(false);
 	const [processes, setProcesses] = useState<ProcessData[]>([]);
+	const [activeProcessesCount, setActiveProcessesCount] = useState<number>(0);
 	const [editProcess, setEditProcess] = useState<ProcessData | null>(null);
 	const { userData } = useContext(AuthContext);
 
@@ -43,6 +45,7 @@ const App: React.FC = () => {
 			}
 			const data: ProcessData[] = await response.json();
 			setProcesses(data);
+			setActiveProcessesCount(data.filter((proc) => proc.status === 'active').length);
 			consoleNotify('Processes fetched successfully', 'success');
 		} catch (error) {
 			console.error('Network or other error fetching processes:', error);
@@ -108,6 +111,7 @@ const App: React.FC = () => {
 
 	const handleFormSubmit = async (formData: ProcessData) => {
 		try {
+			if (isActiveProcessCountLimitNoAvalible()) return;
 			const url = editProcess
 				? `${process.env.NEXT_PUBLIC_BOT_PUBLIC_API_URL}processes/${formData.USER_EMAIL}`
 				: `${process.env.NEXT_PUBLIC_BOT_PUBLIC_API_URL}processes`;
@@ -179,6 +183,16 @@ const App: React.FC = () => {
 		}
 	};
 
+	const isActiveProcessCountLimitNoAvalible = (): boolean => {
+		if (activeProcessesCount.toString() == userData.plan?.processProgramationAvalaible) {
+			consoleNotify(
+				'Has alcanzado el límite de procesos activos para tu plan. Por favor, elimina o pausa un proceso activo antes de agregar uno nuevo.',
+				'warning',
+			);
+			return true;
+		} else return false;
+	};
+
 	return (
 		<>
 			{/* <SubHeader>
@@ -194,7 +208,7 @@ const App: React.FC = () => {
 							Procesos activos:{' '}
 							<span className='text-info fw-bold'>
 								{' '}
-								{userData.plan?.processProgramationActive} /{' '}
+								{activeProcessesCount} /{' '}
 								{userData.plan?.processProgramationAvalaible}
 							</span>
 						</small>
@@ -217,6 +231,8 @@ const App: React.FC = () => {
 							<Button
 								color='primary'
 								onClick={() => {
+									if (isActiveProcessCountLimitNoAvalible()) return;
+
 									setShowForm(!showForm);
 									if (showForm || editProcess) {
 										setEditProcess(null);
