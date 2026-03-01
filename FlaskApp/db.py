@@ -3,17 +3,20 @@ import subprocess
 import psutil
 import signal
 import time
+import os
 
 # ==========================
 # 🔧 CONFIGURACIÓN
 # ==========================
 
-USE_LOCAL_DB = True  # True = Mongo local, False = Mongo Atlas remoto
+# USE_LOCAL_DB = True  # True = Mongo local, False = Mongo Atlas remoto
 LOCAL_DB_PATH = "/usr/local/var/mongodb"
 LOCAL_PORT = 27017
 
 # Si luego usas Atlas:
-MONGO_URI = "mongodb+srv://<usuario>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority"
+# MONGO_URI = "mongodb+srv://<usuario>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority"
+MONGO_URI = os.environ.get("MONGO_URI")
+USE_LOCAL_DB = os.environ.get("USE_LOCAL_DB", "false").lower() in ("1","true","yes")
 
 mongo_process = None
 
@@ -80,10 +83,12 @@ def connect_db():
     """Conecta con MongoDB local o remoto."""
     if USE_LOCAL_DB:
         start_mongo()
-        client = MongoClient(f"mongodb://localhost:{LOCAL_PORT}/")
+        # client = MongoClient(f"mongodb://localhost:{LOCAL_PORT}/")
+        client = MongoClient(MONGO_URI)
         print("✅ Conectado a MongoDB local.")
     else:
-        client = MongoClient(MONGO_URI)
+        # client = MongoClient(MONGO_URI)
+        client = MongoClient("mongodb://mongo:27017/")
         print("✅ Conectado a MongoDB Atlas remoto.")
 
     db = client["visa_db"]

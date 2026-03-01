@@ -10,7 +10,7 @@ import json
 import atexit
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000","http://127.0.0.1:5001","http://localhost:5001"])
+CORS(app, origins=["http://localhost:3000","http://127.0.0.1:5001","http://localhost:5001","https://puntovisas.com"])
 
 @app.route('/processes', methods=['GET'])
 def get_processes():
@@ -178,4 +178,6 @@ def ver_datos():
 
 if __name__ == '__main__':
     atexit.register(stop_mongo) #Termina servidor mongo db
-    app.run(debug=True,port=5001)
+    # app.run(debug=True,port=5001)
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host='0.0.0.0', port=port, debug=False)

@@ -1,4 +1,5 @@
 import sys
+import os
 from typing import List
 from selenium import webdriver
 import platform
@@ -38,7 +39,8 @@ class AppointmentCheck:
         self.logger = logger
 
         chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Ejecuta el navegador en modo headless (sin interfaz gráfica)
+        # chrome_options.add_argument("--headless")  # Ejecuta el navegador en modo headless (sin interfaz gráfica)
+        chrome_options.add_argument("--headless=new")  # headless recomendado
         chrome_options.add_argument("--disable-gpu")  # Necesario para algunos entornos headless
         chrome_options.add_argument("--no-sandbox")  # Evita errores en contenedores
         chrome_options.add_argument("--disable-dev-shm-usage")  # Mejora rendimiento en modo headless
@@ -49,6 +51,12 @@ class AppointmentCheck:
         chrome_options.add_experimental_option("useAutomationExtension", False)
         chrome_options.add_argument("--enable-javascript")
         chrome_options.add_argument("--remote-debugging-port=9222")
+        # driver_path = os.environ.get("CHROMEDRIVER_PATH")
+        # if not driver_path:
+        #     # fallback a ubicación habitual en Linux si chromedriver está instalado en el sistema
+        #     driver_path = "/usr/bin/chromedriver"
+
+        driver_path = os.environ.get("CHROMEDRIVER_PATH")
         if platform.system() == "Windows":
             driver_path = "./drivers/chromedriver.exe"
         elif platform.system() == "Darwin":
@@ -73,18 +81,20 @@ class AppointmentCheck:
                 self.login()
                 location_select_id = "appointments_consulate_appointment_facility_id"
                 checkbox_id = "confirmed_limit_message"
-                # Esperamos a que ocurra ALGO relevante: cambio de URL, aparición del id de reprogramación o del checkbox de límite
+                applicants_list_id = "applicants[]"
+                # Esperamos a que ocurra ALGO relevante: cambio de URL, aparición de reprogramación, checkbox límite o lista de aplicantes
                 try:
                     WebDriverWait(self.driver, self.pageLoadTime).until(
                         lambda d: (
                             d.current_url != login_url or
                             d.find_elements(By.ID, location_select_id) or
-                            d.find_elements(By.ID, checkbox_id)
+                            d.find_elements(By.ID, checkbox_id) or
+                            d.find_elements(By.NAME, applicants_list_id)
                         )
                     )
                 except TimeoutException:
                     self.error_controller("No se pudo determinar el estado después del inicio de sesión")
-                    return
+                    return                
                 current_url_after_login = self.driver.current_url
                 self.print_controller(f"Estado después del login: {current_url_after_login}")
                 if current_url_after_login == login_url:
@@ -94,40 +104,74 @@ class AppointmentCheck:
                 # 1) Si está el checkbox confirmed_limit_message -> marcar y continuar
                 if self.driver.find_elements(By.ID, checkbox_id):
                     self.print_controller("Detectado checkbox 'confirmed_limit_message' (Scheduling Limit). Intentando aceptar...")
-
                     try:
-                        # Click en checkbox
                         checkbox = self.driver.find_element(By.ID, checkbox_id)
-                        self.driver.execute_script("arguments[0].click();", checkbox)
                         # Marcar checkbox SOLO si no está marcado
                         if not checkbox.is_selected():
                             self.driver.execute_script("arguments[0].click();", checkbox)
-
-                        time.sleep(5)
-                        # Click en submit (input type="submit" name="commit")
+                        time.sleep(2)
+                        
+                        # Click en submit
                         submit_btn = self.driver.find_element(By.XPATH, "//input[@type='submit' and @name='commit']")
                         self.driver.execute_script("arguments[0].click();", submit_btn)
 
-                        # Esperar que cargue la página de reprogramación (id esperado)
+                        # MODIFICACIÓN: Esperar a que cargue location_select_id O la lista de aplicantes
                         WebDriverWait(self.driver, self.pageLoadTime).until(
-                            EC.presence_of_element_located((By.ID, location_select_id))
+                            lambda d: (
+                                d.find_elements(By.ID, location_select_id) or 
+                                d.find_elements(By.NAME, applicants_list_id)
+                            )
                         )
-
-                        # actualizar URL y continuar
                         current_url_after_login = self.driver.current_url
                         self.print_controller("Aceptado Scheduling Limit page")
                     except TimeoutException:
                         self.error_controller("No se pudo continuar desde Scheduling Limit (falló al marcar/submit).")
                         return
-                # 3) Si existe directamente el id de reprogramación -> flujo normal
-                elif self.driver.find_elements(By.ID, location_select_id):
-                    self.print_controller("Página de reprogramación detectada correctamente")
 
-                # 4) Cualquier otro caso -> error: no se encontró la página de reprogramación
+                # 2) Si está la lista de aplicantes -> seleccionar todos y continuar
+                if self.driver.find_elements(By.NAME, applicants_list_id):
+                    self.print_controller("Detectada página 'Applicants List'. Intentando aceptar...")
+                    try:
+                        applicants_checkboxes = self.driver.find_elements(By.NAME, applicants_list_id)
+                        
+                        cantidad_aplicantes = len(applicants_checkboxes)
+                        self.print_controller(f"Cantidad de aplicantes encontrados: {cantidad_aplicantes}")
+                        nombres_aplicantes = []
+                        # Extraemos el texto del contenedor padre una sola vez (usando el primer checkbox)
+                        if cantidad_aplicantes > 0:
+                            texto_completo = applicants_checkboxes[0].find_element(By.XPATH, "./../..").text.strip()
+                            # Separamos el bloque de texto por los saltos de línea y limpiamos espacios
+                            nombres_aplicantes = [nombre.strip() for nombre in texto_completo.split('\n') if nombre.strip()]
+                            # Imprimir lista de nombres extraídos correctamente separados
+                            self.print_controller(f"Lista de aplicantes: {nombres_aplicantes}")
+                        
+                        for checkbox in applicants_checkboxes:
+                            # Dar click si no está marcado
+                            if not checkbox.is_selected():
+                                self.driver.execute_script("arguments[0].click();", checkbox)
+                                
+                        time.sleep(2)
+                        
+                        # Click en submit
+                        submit_btn = self.driver.find_element(By.XPATH, "//input[@type='submit' and @name='commit']")
+                        self.driver.execute_script("arguments[0].click();", submit_btn)
+
+                        # Ahora sí, esperar definitivamente la página de reprogramación (location_select_id)
+                        WebDriverWait(self.driver, self.pageLoadTime).until(
+                            EC.presence_of_element_located((By.ID, location_select_id))
+                        )
+                        current_url_after_login = self.driver.current_url
+                        self.print_controller("Aceptada Applicants List page")
+                    except TimeoutException:
+                        self.error_controller("No se pudo continuar desde la lista de aplicantes.")
+                        return
+
+                # 3) Verificación final: confirmar que el ID de reprogramación existe
+                if self.driver.find_elements(By.ID, location_select_id):
+                    self.print_controller("Página de reprogramación detectada correctamente")
                 else:
-                    self.error_controller("No se encontró la página de reprogramación")
+                    self.error_controller("No se encontró la página de reprogramación: revisar si el ID DE PROCESO es correcto")
                     return
-                
                 
                 # ----- Continuación original del flujo: si se redireccionó correctamente, seguir con check_dates -----
                 self.print_controller("Se inició sesión exitosamente")
@@ -141,13 +185,13 @@ class AppointmentCheck:
                     return
 
                 current_url_after_login = self.driver.current_url
-                self.print_controller("Url acu"+current_url_after_login)
+                self.print_controller("Url actual: " + current_url_after_login)
                 if self.url in current_url_after_login:
                     self.check_dates()
                 else:
                     self.error_controller("Hubo fallo al encontrar pagina de reprogramacion después de login")
             else:
-                self.error_controller("El programa no respende a la pagina de citas. Url actual: "+current_url)
+                self.error_controller("El programa no responde a la pagina de citas. Url actual: " + current_url)
         except Exception as e:
             self.error_controller(f"Error durante el proceso de inicio de sesión y redirección a verificación de citas: {e}")
         finally:
