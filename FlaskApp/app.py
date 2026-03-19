@@ -1,16 +1,20 @@
 import os
 from flask import Flask, request, jsonify
-from db import connect_db, stop_mongo, users_collection
+# from db import connect_db, stop_mongo, users_collection
 from controllers.userController import get_user_by_id, login_user
 from utils import get_log_filename, get_paginated_logs
 from process_manager import start_process, stop_process, get_process_status
 from models import add_process, get_process_by_email, update_process, delete_process, list_processes
 from flask_cors import CORS
-import json
-import atexit
+# import json
+# import atexit
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000","http://127.0.0.1:5001","http://localhost:5001","https://puntovisas.com"])
+CORS(app, origins=["http://localhost:3000","http://127.0.0.1:5001","http://localhost:5001","https://puntovisas.com","https://app.puntovisas.com"])
+
+@app.route("/")
+def home():
+    return jsonify({"message": "Hola desde Punto Visas!"})
 
 @app.route('/processes', methods=['GET'])
 def get_processes():
@@ -21,7 +25,7 @@ def get_processes():
     # Devuelve la lista de procesos con su estado actualizado
     processes = list_processes()
     user_processes = [proc for proc in processes if proc.get('user_id') == user_id]
-    # Actualizar el estado de cada proceso, por ejemplo, con psutil o comprobando el PID
+    # Actualizar el estado de cada proceso, por ejemplo, 
     for proc in user_processes:
         proc['active'] = get_process_status(proc.get('pid'))
     return jsonify(user_processes), 200
@@ -169,15 +173,15 @@ def get_user_endpoint(user_id: str):
         return jsonify({"error": "Usuario no encontrado."}), 404
 
 
-@app.route("/db")
-def ver_datos():
-    print("ver ver_datos")
-    users = list(users_collection.find({}, {"_id": 0}))  # sin mostrar el ObjectId
-    return jsonify(users)
+# @app.route("/db")
+# def ver_datos():
+#     print("ver ver_datos")
+#     users = list(users_collection.find({}, {"_id": 0}))  # sin mostrar el ObjectId
+#     return jsonify(users)
 
 
 if __name__ == '__main__':
-    atexit.register(stop_mongo) #Termina servidor mongo db
+    # atexit.register(stop_mongo) #Termina servidor mongo db
     # app.run(debug=True,port=5001)
     port = int(os.environ.get("PORT", 5001))
     app.run(host='0.0.0.0', port=port, debug=False)
