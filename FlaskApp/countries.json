@@ -1,0 +1,12 @@
+{
+  "Ecuador": {
+    "country": "Ecuador",
+    "code_link": "es-ec",
+    "locations": ["Quito", "Guayaquil"]
+  },
+  "Colombia": {
+    "country": "Colombia",
+    "code_link": "es-co",
+    "locations": ["Bogota", "Medellin"]
+  }
+}

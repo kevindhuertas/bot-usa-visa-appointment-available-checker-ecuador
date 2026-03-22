@@ -13,9 +13,9 @@ def start_process(config):
         "--blocked_days", ",".join(config["blocked_days"]),
         "--stop_month", config["stop_month"],
         "--user_id", config["user_id"],
-        "--appoinment_id", config["appoinment_id"]
+        "--appoinment_id", config["appoinment_id"],
+        "--country", config.get("country", "Ecuador")
     ]
-
     # Iniciar el proceso en background
     process = subprocess.Popen(args)
     return process.pid

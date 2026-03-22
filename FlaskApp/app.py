@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify
 from controllers.userController import get_user_by_id, login_user
 from utils import get_log_filename, get_paginated_logs
 from process_manager import start_process, stop_process, get_process_status
-from models import add_process, get_process_by_email, update_process, delete_process, list_processes
+from models import add_process, update_process, delete_process, list_processes
 from flask_cors import CORS
 # import json
 # import atexit

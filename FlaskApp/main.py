@@ -1,5 +1,6 @@
 import logging
 import os
+from random import random
 import time
 import argparse
 from datetime import datetime
@@ -7,11 +8,12 @@ from cita_checker import AppointmentCheck
 from utils import get_log_filename, get_stop_month
 
 # Configurar logging
-def main(email, password, locations, months, stop_month,blocked_days,user_id, appoinment_id):
+def main(email, password, locations, months, stop_month,blocked_days,user_id, appoinment_id, country):
     logger = setup_logger(email)
-    logger.info(f"Iniciando verificación de citas para {email} en {locations} para los meses {months} para la cita_id de {appoinment_id}")
+    logger.info(f"Iniciando verificación de citas para {email} en {locations} para los meses {months} para la cita_id de {appoinment_id} en {country}")
+    logger.info(f"CLIENT: Iniciado busqueda de la cita mas cercana para {email}")
     try:
-        checker = AppointmentCheck(email, password, locations, months, stop_month,blocked_days,logger,user_id, appoinment_id)
+        checker = AppointmentCheck(email, password, locations, months, stop_month,blocked_days,logger,user_id, appoinment_id, country)
         checker.check()
         logger.info(f"Check completado exitosamente para {email}")
     except Exception as e:
@@ -46,10 +48,13 @@ if __name__ == "__main__":
     parser.add_argument("--blocked_days", required=True, help="Dias bloqueados")
     parser.add_argument("--user_id", required=True, help="User id del usuario")
     parser.add_argument("--appoinment_id", required=True, help="Appointment id del usuario")
+    parser.add_argument("--country", required=True, help="Country del usuario")
 
     args = parser.parse_args()
 
+    import random
     while True:
+        
         main(
             email=args.email,
             password=args.password,
@@ -59,6 +64,7 @@ if __name__ == "__main__":
             blocked_days=args.blocked_days.split(","),
             user_id=args.user_id,
             appoinment_id=args.appoinment_id,
+            country=args.country,
         )
-
-        time.sleep(38)  # Esperar 400 segundos antes del siguiente ciclo
+        sleep_time = random.randint(40, 60)
+        time.sleep(sleep_time)
