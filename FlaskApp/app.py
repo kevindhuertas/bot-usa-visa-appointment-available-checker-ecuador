@@ -8,8 +8,15 @@ from models import add_process, get_process_by_email, update_process, delete_pro
 from flask_cors import CORS
 # import json
 # import atexit
+from supabase_client import check_connection
 
 app = Flask(__name__)
+
+# Check Supabase connection on startup
+if check_connection():
+    print("Supabase connection successful.")
+else:
+    print("WARNING: Supabase connection failed.")
 CORS(app, origins=["http://localhost:3000","http://127.0.0.1:5001","http://localhost:5001","https://puntovisas.com","https://app.puntovisas.com"])
 
 @app.route("/")
@@ -30,6 +37,8 @@ def get_processes():
         proc['active'] = get_process_status(proc.get('pid'))
     return jsonify(user_processes), 200
 
+import uuid
+
 @app.route('/processes', methods=['POST'])
 def create_process():
     data = request.json
@@ -39,52 +48,72 @@ def create_process():
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing field {field}"}), 400
+    
+    # Generate ID if not present
+    if 'process_id' not in data and 'id' not in data:
+        data['process_id'] = str(uuid.uuid4())
+    elif 'id' in data and 'process_id' not in data:
+        data['process_id'] = data['id']
+        
+    from models import get_process_by_email_and_user
     #Verificar que no se duplique
-    if(get_process_by_email(data['USER_EMAIL']) != None):
-        return jsonify({"error": f"{data['USER_EMAIL']} already exist"}), 400
+    if(get_process_by_email_and_user(data['USER_EMAIL'], data['user_id']) != None):
+        return jsonify({"error": f"El email {data['USER_EMAIL']} ya existe en tus procesos"}), 400
     # Inicia el proceso mediante subprocess y obtiene el PID
     pid = start_process(data)
     data['pid'] = pid
     data['status'] = 'active'
     data['last_Error'] = ''
     data['last_check'] = ''
-    add_process(data)
+    success, error = add_process(data)
+
+    if not success:
+        return jsonify({"error": f"Error al crear el proceso: {error}"}), 500
+
     return jsonify(data), 201
 
-@app.route('/processes/<user_email>', methods=['PUT'])
-def edit_process(user_email):
+@app.route('/processes/<process_id>', methods=['PUT'])
+def edit_process(process_id):
     data = request.json
-    # required_fields = ["USER_EMAIL", "USER_PASSWORD", "allowed_location_to_save_appointment",
-    #                    "allowed_months_to_save_appointment", "stop_month","user_id","appoinment_id"]
-    # for field in required_fields:
-    #     if field not in data:
-    #         return jsonify({"error": f"Missing field {field}"}), 400
     print(f"PUT: {data}")
     # Solo se permite editar si el proceso está inactivo
-    process = update_process(user_email, data)
+    process, error = update_process(process_id, data)
     if not process:
-        return jsonify({"error": "No se pudo editar. Asegúrate que el proceso esté inactivo."}), 400
+        return jsonify({"error": error or "No se pudo editar. Asegúrate que el proceso esté inactivo."}), 400
     # Reinicia el proceso con la nueva configuración
     pid = start_process(data)
     process['pid'] = pid
     process['status'] = 'active'
-    update_process(user_email, process)
+    updated_process, error = update_process(process_id, process)
+    if error:
+        return jsonify({"error": f"Error al actualizar el proceso después de reiniciar: {error}"}), 500
     return jsonify(process), 200
 
-@app.route('/processes/<user_email>/stop', methods=['POST'])
-def stop_process_endpoint(user_email):
+@app.route('/processes/<process_id>/stop', methods=['POST'])
+def stop_process_endpoint(process_id):
+    if not process_id:
+        return jsonify({"error": "process_id es requerido"}), 400
+
+    print(f"Deteniendo proceso con ID: {process_id}")
+
     # Detener el proceso activo
-    process = stop_process(user_email)
+    process, error_msg = stop_process(process_id)
+    
     if not process:
-        return jsonify({"error": "Proceso no encontrado o ya inactivo"}), 400
+        return jsonify({"error": error_msg or "Proceso no encontrado"}), 400
+        
+    if error_msg:
+        # Si hubo un error deteniendo en OS pero se actualizó en BD
+        return jsonify({"process": process, "info": error_msg}), 200
+        
     return jsonify(process), 200
 
-@app.route('/processes/<user_email>', methods=['DELETE'])
-def delete_process_endpoint(user_email):
+@app.route('/processes/<process_id>', methods=['DELETE'])
+def delete_process_endpoint(process_id):
     # Solo permite eliminar si el proceso está inactivo
-    result = delete_process(user_email)
+    result, error = delete_process(process_id)
     if not result:
-        return jsonify({"error": "No se pudo eliminar. Verifica que el proceso esté inactivo."}), 400
+        return jsonify({"error": error or "No se pudo eliminar. Verifica que el proceso esté inactivo."}), 400
     return jsonify({"message": "Proceso eliminado exitosamente"}), 200
     
     

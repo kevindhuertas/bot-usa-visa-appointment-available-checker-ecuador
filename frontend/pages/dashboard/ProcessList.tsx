@@ -18,7 +18,7 @@ import Card, {
 interface ProcessListProps {
 	processes: ProcessData[];
 	onEdit: (processData: ProcessData) => void;
-	onStop: (userEmail: string) => void;
+	onStop: (processId: string) => void;
 	onDelete: (userEmail: string) => void;
 }
 
@@ -176,7 +176,7 @@ const ProcessList: React.FC<ProcessListProps> = ({ processes, onEdit, onStop, on
 										{proc.status === 'active' ? (
 											<Button
 												color='primary' // Assuming 'primary' is suitable for 'Stop'
-												onClick={() => onStop(proc.USER_EMAIL)}
+												onClick={() => onStop(proc.process_id)}
 												size='sm'>
 												Detener
 											</Button>
@@ -191,7 +191,7 @@ const ProcessList: React.FC<ProcessListProps> = ({ processes, onEdit, onStop, on
 												</Button>
 												<Button
 													color='danger' // Corresponds to MUI color="error"
-													onClick={() => onDelete(proc.USER_EMAIL)}
+													onClick={() => onDelete(proc.process_id)}
 													size='sm'>
 													Eliminar
 												</Button>

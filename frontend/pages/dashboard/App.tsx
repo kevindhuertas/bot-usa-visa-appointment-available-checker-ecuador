@@ -113,7 +113,7 @@ const App: React.FC = () => {
 		try {
 			if (isActiveProcessCountLimitNoAvalible()) return;
 			const url = editProcess
-				? `${process.env.NEXT_PUBLIC_BOT_PUBLIC_API_URL}processes/${formData.USER_EMAIL}`
+				? `${process.env.NEXT_PUBLIC_BOT_PUBLIC_API_URL}processes/${formData.process_id}`
 				: `${process.env.NEXT_PUBLIC_BOT_PUBLIC_API_URL}processes`;
 
 			const method = editProcess ? 'PUT' : 'POST';
@@ -144,19 +144,19 @@ const App: React.FC = () => {
 		setShowForm(true);
 	};
 
-	const handleStop = async (userEmail: string) => {
+	const handleStop = async (id: string) => {
 		try {
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_BOT_PUBLIC_API_URL}processes/${userEmail}/stop`,
+				`${process.env.NEXT_PUBLIC_BOT_PUBLIC_API_URL}processes/${id}/stop`,
 				{ method: 'POST' },
 			);
 			if (response.ok) {
-				consoleNotify(`Stop request sent for ${userEmail}`, 'success');
+				consoleNotify(`Stop request sent for ${id}`, 'success');
 				fetchProcesses(); // Refresh list to show updated status
 			}
 			// Error handled by fetch wrapper
 		} catch (error) {
-			console.error(`Error stopping process ${userEmail}:`, error);
+			console.error(`Error stopping process ${id}:`, error);
 			// consoleNotify likely called by fetch wrapper
 		}
 	};

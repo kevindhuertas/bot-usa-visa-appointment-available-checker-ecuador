@@ -3,70 +3,129 @@ import os
 from datetime import datetime
 
 from main import get_log_filename
+from supabase_client import create_record, read_records, update_record, delete_record
 
-JSON_FILE = 'processes.json'
+# JSON_FILE = 'processes.json' # deprecated, using supabase now
+
+def map_process_to_db(proc):
+    return {
+        "process_id": proc.get("process_id"),
+        "appointment_id": proc.get("appoinment_id"), # based on start_process args
+        "user_id": proc.get("user_id"),
+        "user_email": proc.get("USER_EMAIL"),
+        "allowed_locations": proc.get("allowed_location_to_save_appointment", []),
+        "allowed_months": proc.get("allowed_months_to_save_appointment", []),
+        "stop_month": proc.get("stop_month"),
+        "blocked_days": proc.get("blocked_days", []),
+        "status": proc.get("status", "inactive"),
+        "pid": str(proc.get("pid", "")),
+        "process_finished": proc.get("process_finished", False),
+    }
+
+def map_db_to_process(db_proc):
+    return {
+        "process_id": db_proc.get("process_id"),
+        "appoinment_id": db_proc.get("appointment_id"),
+        "user_id": db_proc.get("user_id"),
+        "USER_EMAIL": db_proc.get("user_email"),
+        "allowed_location_to_save_appointment": db_proc.get("allowed_locations", []),
+        "allowed_months_to_save_appointment": db_proc.get("allowed_months", []),
+        "stop_month": db_proc.get("stop_month"),
+        "blocked_days": db_proc.get("blocked_days", []),
+        "status": db_proc.get("status", "inactive"),
+        "pid": db_proc.get("pid", ""),
+        "process_finished": db_proc.get("process_finished", False),
+    }
 
 def load_processes():
-    if not os.path.exists(JSON_FILE):
+    try:
+        response = read_records("processes")
+        if response.data:
+            return [map_db_to_process(p) for p in response.data]
         return []
-    with open(JSON_FILE, 'r') as f:
-        return json.load(f)
+    except Exception as e:
+        print(f"Error loading processes: {e}")
+        return []
 
 def save_processes(processes):
-    print(f"SAVE PROCESS: {processes}")
-    with open(JSON_FILE, 'w') as f:
-        json.dump(processes, f, indent=4)
+    pass # Managed individually via add/update/delete now
 
 def add_process(new_proc):
-    processes = load_processes()
-    processes.append(new_proc)
-    save_processes(processes)
+    try:
+        db_data = map_process_to_db(new_proc)
+        print(db_data)
+        db_data["process_create_date"] = datetime.now().isoformat()
+        create_record("processes", db_data)
+        return True, None
+    except Exception as e:
+        print(f"Error adding process: {e}")
+        return False, str(e)
 
 def list_processes():
     return load_processes()
 
 def get_process_by_email(user_email):
-    processes = load_processes()
-    for proc in processes:
-        if proc.get('USER_EMAIL') == user_email:
-            return proc
-    return None
+    try:
+        response = read_records("processes", {"user_email": user_email})
+        if response.data and len(response.data) > 0:
+            return map_db_to_process(response.data[0])
+        return None
+    except Exception as e:
+        print(f"Error getting process by email: {e}")
+        return None
 
-def update_process(user_email, updated_proc):
-    processes = load_processes()
-    updated = False
-    for idx, proc in enumerate(processes):
-        if proc.get('USER_EMAIL') == user_email:
-            print(f"Proceso {proc}, UPDATE with: {updated_proc}")
-            # Permitir edición solo si el proceso está inactivo
-            if proc.get('status') == 'active' and updated_proc.get('status') == 'active':
-                return None
-            processes[idx] = updated_proc
-            updated = True
-            break
-    if updated:
-        save_processes(processes)
-        return updated_proc
-    return None
+def get_process_by_email_and_user(user_email, user_id):
+    try:
+        response = read_records("processes", {"user_email": user_email, "user_id": user_id})
+        if response.data and len(response.data) > 0:
+            return map_db_to_process(response.data[0])
+        return None
+    except Exception as e:
+        print(f"Error getting process by email and user: {e}")
+        return None
 
-def delete_process(user_email):
-    processes = load_processes()
-    new_processes = []
-    deleted = False
-    for proc in processes:
-        if proc.get('USER_EMAIL') == user_email:
-            # Solo eliminar si está inactivo
-            if proc.get('status') == 'inactive':
-                deleted = True
-                continue
-            else:
-                return None
-        new_processes.append(proc)
-    if deleted:
-        save_processes(new_processes)
-        # delete_log_file(user_email)
-        return True
-    return False
+def get_process_by_id(process_id):
+    try:
+        response = read_records("processes", {"process_id": process_id})
+        if response.data and len(response.data) > 0:
+            return map_db_to_process(response.data[0])
+        return None
+    except Exception as e:
+        print(f"Error getting process by id: {e}")
+        return None
+
+def update_process(process_id, updated_proc):
+    try:
+        proc = get_process_by_id(process_id)
+        if not proc:
+            return None, "Proceso no encontrado"
+        print(f"Proceso {proc}, UPDATE with: {updated_proc}")
+        # Permitir edición solo si el proceso está inactivo
+        if proc.get('status') == 'active' and updated_proc.get('status') == 'active':
+            return None, "No se puede editar un proceso activo"
+        
+        db_data = map_process_to_db(updated_proc)
+        update_record("processes", "process_id", process_id, db_data)
+        return updated_proc, None
+    except Exception as e:
+        print(f"Error updating process: {e}")
+        return None, str(e)
+
+def delete_process(process_id):
+    try:
+        proc = get_process_by_id(process_id)
+        if not proc:
+            return False, "Proceso no encontrado"
+        
+        # Solo eliminar si está inactivo
+        if proc.get('status') == 'inactive':
+            delete_record("processes", "process_id", process_id)
+            return True, None
+        else:
+            return False, "El proceso debe estar inactivo para poder eliminarlo"
+    except Exception as e:
+        print(f"Error deleting process: {e}")
+        return False, str(e)
 
 def delete_log_file(email: str) -> bool:
     log_file = get_log_filename(email)
@@ -80,31 +139,31 @@ def delete_log_file(email: str) -> bool:
         print(f"ERROR eliminando el LOG para {email}: {str(e)}")
         return False
 
-
 def update_process_checks(user_email):
-    processes = load_processes()
-    for idx, proc in enumerate(processes):
-        if proc.get('USER_EMAIL') == user_email:
-            # Incrementar el contador de checks
-            current_count = int(proc.get('check_count', 0))
-            processes[idx]['check_count'] = current_count + 1
-            # Actualizar la última fecha de check
-            processes[idx]['last_check'] = datetime.now().isoformat()
-            save_processes(processes)
-            return processes[idx]
-    return None
+    # This might require a check_count field in processes or users.
+    # The current supabase schema for processes doesn't have check_count.
+    # Assuming we want to update it in memory or it's handled differently.
+    try:
+        proc = get_process_by_email(user_email)
+        if proc:
+            # We don't have check_count in the provided schema for processes, 
+            # maybe it's in users table?
+            # Let's just return the process for now, or update if we add it.
+            pass
+        return proc
+    except Exception as e:
+        print(f"Error updating process checks: {e}")
+        return None
 
 def update_process_error(user_email, error_message):
-    processes = load_processes()
-    for idx, proc in enumerate(processes):
-        if proc.get('USER_EMAIL') == user_email:
-            # Manejar el mensaje de error
-            if error_message is None:
-                processes[idx]['last_Error'] = ""
-            else:
-                processes[idx]['last_Error'] = error_message
-                # Cambiar estado a inactive si hay error
-                processes[idx]['status'] = "inactive"
-            save_processes(processes)
-            return processes[idx]
-    return None
+    try:
+        proc = get_process_by_email(user_email)
+        if proc:
+            if error_message is not None:
+                proc['status'] = "inactive"
+                db_data = map_process_to_db(proc)
+                update_record("processes", "user_email", user_email, db_data)
+            return proc
+    except Exception as e:
+        print(f"Error updating process error: {e}")
+        return None

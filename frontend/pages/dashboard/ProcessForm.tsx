@@ -11,6 +11,7 @@ import Popovers from '../../components/bootstrap/Popovers';
 import Icon from '../../components/icon/Icon';
 
 export interface ProcessData {
+	process_id: string;
 	pid?: string;
 	user_id: string;
 	USER_EMAIL: string;
@@ -52,6 +53,7 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 	}, []);
 
 	const [formData, setFormData] = useState<ProcessData>({
+		process_id: initialData?.process_id || '',
 		USER_EMAIL: initialData?.USER_EMAIL || '',
 		USER_PASSWORD: initialData?.USER_PASSWORD || '',
 		appoinment_id: initialData?.appoinment_id || '',
@@ -67,6 +69,7 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 	useEffect(() => {
 		if (initialData) {
 			setFormData({
+				process_id: initialData.process_id,
 				USER_EMAIL: initialData.USER_EMAIL,
 				USER_PASSWORD: initialData.USER_PASSWORD,
 				appoinment_id: initialData.appoinment_id,
@@ -81,6 +84,7 @@ const ProcessForm: React.FC<ProcessFormProps> = ({ initialData, onSubmit, onCanc
 			});
 		} else {
 			setFormData({
+				process_id: '',
 				USER_EMAIL: '',
 				USER_PASSWORD: '',
 				appoinment_id: '',
