@@ -1,6 +1,9 @@
 import smtplib
 from email.message import EmailMessage
-from gmail_credentials import SENDER_EMAIL, PASSWORD, RECIPIENT_EMAIL
+
+SENDER_EMAIL = "kevindhuertas@gmail.com"
+PASSWORD = "xrbl frzq ugkp ljpt"
+RECIPIENT_EMAIL = "kevindhuertas@gmail.com"
 
 class EmailAlert:
     def __init__(self):

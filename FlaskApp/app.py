@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, app, request, jsonify
 # from db import connect_db, stop_mongo, users_collection
 from controllers.userController import get_user_by_id, login_user
 from utils import get_log_filename, get_paginated_logs
@@ -9,17 +9,24 @@ from flask_cors import CORS
 # import json
 # import atexit
 from supabase_client import check_connection
+import logging
 
+logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
+CORS(app, origins=["http://localhost:3000","http://127.0.0.1:5001","http://localhost:5001","https://puntovisas.com","https://app.puntovisas.com","*"])
 
 # Check Supabase connection on startup
 if check_connection():
     print("Supabase connection successful.")
 else:
     print("WARNING: Supabase connection failed.")
-CORS(app, origins=["http://localhost:3000","http://127.0.0.1:5001","http://localhost:5001","https://puntovisas.com","https://app.puntovisas.com"])
+
 
 @app.route("/")
+def startapi():
+    return "API funcionando 🚀"
+
+@app.route("/test")
 def home():
     return jsonify({"message": "Hola desde Punto Visas!"})
 
@@ -153,64 +160,54 @@ def get_logs(email: str):
         "total": total,
         "has_more": has_more
     }), 200
-
-# USER =====================================================
-@app.route('/auth/login', methods=['POST'])
-def login_endpoint():
-    """
-    Endpoint para el inicio de sesión.
-    Espera un JSON con "identifier" (username o email) y "password".
-    """
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"error": "No se enviaron datos JSON."}), 400
-    
-    identifier = data.get('identifier')
-    password = data.get('password')
-
-    if not identifier or not password:
-        return jsonify({"error": "Faltan 'identifier' o 'password' en la solicitud."}), 400
-
-    authenticated_user = login_user(identifier, password)
-
-    if authenticated_user:
-        # En una aplicación real, aquí generarías y devolverías un token JWT
-        # Por ahora, solo devolvemos los datos del usuario (sin contraseña)
-        return jsonify({
-            "message": "Login exitoso.",
-            "user": authenticated_user #authenticated_user ya no tiene la contraseña
-        }), 200
-    else:
-        return jsonify({"error": "Credenciales inválidas."}), 401
-
-
-@app.route('/users/<user_id>', methods=['GET'])
-def get_user_endpoint(user_id: str):
-    """
-    Endpoint para recuperar la información de un usuario por su ID.
-    No devuelve la contraseña.
-    """
-    user = get_user_by_id(user_id)
-    
-    if user:
-        user_data_to_return = user.copy()
-        if 'password' in user_data_to_return: # Asegurarse de no enviar la contraseña
-            del user_data_to_return['password']
-        return jsonify(user_data_to_return), 200
-    else:
-        return jsonify({"error": "Usuario no encontrado."}), 404
-
-
-# @app.route("/db")
-# def ver_datos():
-#     print("ver ver_datos")
-#     users = list(users_collection.find({}, {"_id": 0}))  # sin mostrar el ObjectId
-#     return jsonify(users)
-
-
+# Solo para local
 if __name__ == '__main__':
+    print("Iniciando app desde Main...")
     # atexit.register(stop_mongo) #Termina servidor mongo db
     # app.run(debug=True,port=5001)
-    port = int(os.environ.get("PORT", 5001))
+    port = int(os.environ.get("PORT", 8080))
+    # port = int(os.environ.get("PORT", 5001))
     app.run(host='0.0.0.0', port=port, debug=False)
+
+
+# USER =====================================================
+# @app.route('/auth/login', methods=['POST'])
+# def login_endpoint(): 
+#     data = request.get_json()
+#     if not data:
+#         return jsonify({"error": "No se enviaron datos JSON."}), 400
+    
+#     identifier = data.get('identifier')
+#     password = data.get('password')
+#     if not identifier or not password:
+#         return jsonify({"error": "Faltan 'identifier' o 'password' en la solicitud."}), 400
+#     authenticated_user = login_user(identifier, password)
+#     if authenticated_user:
+#         # En una aplicación real, aquí generarías y devolverías un token JWT
+#         # Por ahora, solo devolvemos los datos del usuario (sin contraseña)
+#         return jsonify({
+#             "message": "Login exitoso.",
+#             "user": authenticated_user #authenticated_user ya no tiene la contraseña
+#         }), 200
+#     else:
+#         return jsonify({"error": "Credenciales inválidas."}), 401
+
+
+# @app.route('/users/<user_id>', methods=['GET'])
+# def get_user_endpoint(user_id: str):
+#     """
+#     Endpoint para recuperar la información de un usuario por su ID.
+#     No devuelve la contraseña.
+#     """
+#     user = get_user_by_id(user_id)
+    
+#     if user:
+#         user_data_to_return = user.copy()
+#         if 'password' in user_data_to_return: # Asegurarse de no enviar la contraseña
+#             del user_data_to_return['password']
+#         return jsonify(user_data_to_return), 200
+#     else:
+#         return jsonify({"error": "Usuario no encontrado."}), 404
+
+
+

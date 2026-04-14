@@ -29,5 +29,9 @@ ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 # Exponer puerto (usado por docker run y Cloud Run)
 EXPOSE ${PORT}
 
+# Comando para arrancar usando la variable PORT inyectada por Cloud Run
+# CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 120 main:app
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 120 app:app
+
 # Comando para arrancar: asume main.py contiene "app = Flask(__name__)"
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "8", "--timeout", "120", "app:app"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "8", "--timeout", "120", "main:app"]
