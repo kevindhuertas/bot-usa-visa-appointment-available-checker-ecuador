@@ -14,7 +14,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000","http://127.0.0.1:5001","http://localhost:5001","https://puntovisas.com","https://app.puntovisas.com","*"])
-
 # Check Supabase connection on startup
 if check_connection():
     print("Supabase connection successful.")
@@ -24,7 +23,7 @@ else:
 
 @app.route("/")
 def startapi():
-    return "API funcionando 🚀"
+    return "API funcionando v22 🚀"
 
 @app.route("/test")
 def home():
@@ -51,11 +50,25 @@ def create_process():
     data = request.json
     # Validar que se envíen todos los campos requeridos
     required_fields = ["USER_EMAIL", "USER_PASSWORD", "allowed_location_to_save_appointment",
-                       "allowed_months_to_save_appointment", "stop_month","user_id","appoinment_id"]
+                       "allowed_months_to_save_appointment", "stop_month","user_id","appoinment_id","country","user_email_alert","auto_programacion_allowed"]
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing field {field}"}), 400
+        
+    # 2. Validación condicional para Colombia
+    country = data.get("country", "").lower()
+    if country == "colombia":
+        colombia_required_fields = ["nearest_cas_appointment", "current_consular_appointment_date"]
+        for field in colombia_required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing field {field} (Obligatorio para Colombia)"}), 400
+            data['nearest_cas_appointment'] = str(data['nearest_cas_appointment'])
+            # Validar que allowed_sas_days sea una lista si es Colombia
+            # if field == "allowed_sas_days" and not isinstance(data[field], list):
+            #      return jsonify({"error": f"Field allowed_sas_days must be a list"}), 400
     
+    # 3. Continuar con el resto de la lógica
+    data['auto_programacion_allowed'] = str(data['auto_programacion_allowed'])
     # Generate ID if not present
     if 'process_id' not in data and 'id' not in data:
         data['process_id'] = str(uuid.uuid4())

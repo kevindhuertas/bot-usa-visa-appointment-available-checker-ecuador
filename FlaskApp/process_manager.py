@@ -14,8 +14,18 @@ def start_process(config):
         "--stop_month", config["stop_month"],
         "--user_id", config["user_id"],
         "--appoinment_id", config["appoinment_id"],
-        "--country", config.get("country", "Ecuador")
+        "--country", config.get("country", "Ecuador"),
+        "--user_email_alert", config["user_email_alert"],
+        "--auto_programacion_allowed", str(config["auto_programacion_allowed"]),
     ]
+    
+    #Optionals
+    if "nearest_cas_appointment" in config and config["nearest_cas_appointment"]:
+        args.extend(["--nearest_cas_appointment", str(config["nearest_cas_appointment"])])
+        
+    if "current_consular_appointment_date" in config and config["current_consular_appointment_date"]:
+        args.extend(["--current_consular_appointment_date", str(config["current_consular_appointment_date"])])
+
     # Iniciar el proceso en background
     process = subprocess.Popen(args)
     return process.pid
