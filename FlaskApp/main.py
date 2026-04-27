@@ -80,6 +80,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    cycle_interval_min = 70
+    cycle_interval_max = 100
+    
     import random
     while True:
         is_auto_allowed = args.auto_programacion_allowed.lower() == 'true'
@@ -102,5 +105,5 @@ if __name__ == "__main__":
             nearest_cas_appointment=nearest_cas_appointment,                                    
             current_consular_appointment_date=args.current_consular_appointment_date 
         )
-        sleep_time = random.randint(45, 70)
+        sleep_time = random.randint(cycle_interval_min, cycle_interval_max)
         time.sleep(sleep_time)

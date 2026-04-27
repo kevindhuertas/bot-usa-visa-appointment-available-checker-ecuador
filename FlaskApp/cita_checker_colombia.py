@@ -66,6 +66,11 @@ class AppointmentCheckColombia:
         self.alert_sent = False
         self.location = ''
         self.pageLoadTime = 10
+
+        # API config
+        self.check_interval_min = 75
+        self.check_interval_max = 100
+        self.max_check_attempts = 5
         self.max_months = 4
         
         self.allowed_location_to_save_appointment = [
@@ -141,8 +146,8 @@ class AppointmentCheckColombia:
             if current_url == login_url:
                 self.login()
                 
-                for attempt in range(5):
-                    self.print_controller(f"Ciclo de chequeo {attempt + 1}/5")
+                for attempt in range(self.max_check_attempts):
+                    self.print_controller(f"Ciclo de chequeo {attempt + 1}/{self.max_check_attempts}")
                     
                     if attempt > 0:
                         self.driver.get(self.url)
@@ -251,8 +256,8 @@ class AppointmentCheckColombia:
                             self.error_controller("No se encontró la página de reprogramación: revisar si el ID DE PROCESO es correcto")
                             iteration_failed = True
                             
-                    if attempt < 9:
-                        wait_time = random.randint(45, 60)
+                    if attempt < self.max_check_attempts:
+                        wait_time = random.randint(self.check_interval_min, self.check_interval_max)
                         self.print_controller(f"Esperando {wait_time} segundos antes del siguiente chequeo...")
                         time.sleep(wait_time)
             else:
@@ -508,7 +513,7 @@ class AppointmentCheckColombia:
                 time.sleep(3)
                 select_element = self.driver.find_element(By.ID, "appointments_consulate_appointment_time")
                 select_element.click()
-                time.sleep(15)
+                time.sleep(8)
                 # Obtener todas las opciones disponibles dentro del select
                 options = select_element.find_elements(By.TAG_NAME, "option")
                 time.sleep(1)

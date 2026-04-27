@@ -418,8 +418,8 @@ class AppointmentCheck:
                                 if self.location.lower() in [l.lower() for l in self.allowed_location_to_save_appointment]:
                                     if not is_blocked:
                                         self.client_print_controller(f"Cita Consular valida encontrada en {self.location} para {current_date}")
-                                        # if self.location.strip().lower() != "bogota":
-                                        #     self.alert_available_date(month, day_number)
+                                        if self.location.strip().lower() != "bogota":
+                                            self.alert_available_date(month, day_number)
                                         a_tag[0].click()
                                         self.warning_controller(f"Cita disponible en {self.location} el: {current_date}")
                                         self.auto_select_date(month, day_number)
@@ -759,7 +759,7 @@ class AppointmentCheck:
             # if not cas_ready:
             #     self.warning_controller("Se detiene el proceso de auto programación por falta de horarios CAS disponibles.")
             #     return
-            self.auto_submit_reprogramacion_cita(self, month, day)
+            self.auto_submit_reprogramacion_cita(month, day)
         except Exception as e:
             self.error_controller(f"Error en autoSelectDate: {e}")
 
